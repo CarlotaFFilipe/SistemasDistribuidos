@@ -65,12 +65,14 @@ struct data_t *data_dup(struct data_t *data){
 *  Deve assegurar que destroi o conteúdo antigo do mesmo.
 */
 void data_replace(struct data_t *data, int new_size, void *new_data){
-  //if(data == NULL || data->datasize <= 0 || data->data == NULL || new_size <= 0 || new_data == NULL)
-  //  return;
+  if(data == NULL || data->datasize <= 0 || data->data == NULL || new_size <= 0 || new_data == NULL)
+    return;
+//printf("\ndata antigo: %d\n",data->datasize);
   free(data->data);
   data->data = NULL;
   data->datasize = new_size;
-  data->data = malloc (new_size * sizeof(char));
+  data->data =(struct data_t *)realloc(data->data, new_size * sizeof(char));
   memcpy(data->data,new_data,new_size);
   free(new_data);
+//printf("\ndata novo: %d\n",data->datasize);
 }
