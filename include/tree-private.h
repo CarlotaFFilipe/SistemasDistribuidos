@@ -9,7 +9,7 @@
 #include "tree.h"
 
 struct node_t {
-	struct entry_t *entry;
+    struct entry_t *entry;
     struct node_t *left, *right; 
 };
 

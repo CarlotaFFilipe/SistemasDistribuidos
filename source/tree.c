@@ -61,7 +61,7 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
     return -1;
   if(tree->raiz== NULL){
     struct node_t *novo = (struct node_t *)malloc(sizeof(struct node_t));
-    memcpy(novo->entry->key, key);
+    strcpy(novo->entry->key, key);
     novo->left= novo->left= NULL;
     return 1;
   }///////////verificar outra vez se left e right estão bem
