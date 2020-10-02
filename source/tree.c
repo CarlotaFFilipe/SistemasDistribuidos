@@ -33,7 +33,7 @@ void tree_destroy(struct tree_t *tree){
 }
 
 
-freeTree( struct node_t *raiz ){
+void freeTree( struct node_t *raiz ){
     if( raiz == NULL ) 
         return;
     if( raiz->left != NULL ){ //se ainda houver filhos a esquerda, apaga-los primeiro. Apaga de baixo para cima
@@ -43,8 +43,6 @@ freeTree( struct node_t *raiz ){
     }
     entry_destroy(raiz->entry); //eh uma folha, por isso liberta e destroy o conteudo
     free(raiz);
-     
-    return;
 }
 
 
@@ -59,18 +57,25 @@ freeTree( struct node_t *raiz ){
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
   if(tree==NULL)
     return -1;
-  if(tree->raiz== NULL){
-    struct node_t *novo = (struct node_t *)malloc(sizeof(struct node_t));
-    strcpy(novo->entry->key, key);
-    novo->left= novo->left= NULL;
-    return 1;
-  }///////////verificar outra vez se left e right estão bem
-  if(entry_compare(tree->raiz->entry->key, key)>=0)
-    tree->raiz->left = tree_put(tree->raiz->left, key, value);
-  else
-    tree->raiz->right = tree_put(tree->raiz->right, key, value);
+  return inserirEntry(tree->raiz);
 
 }
+
+int inserirEntry(struct node* node, char* key){
+  if (node == NULL){
+    struct node_t *novo = (struct node_t *)malloc(sizeof(struct node_t));
+    strcpy(novo->entry->key, key);
+    novo->left= novo->right= NULL;
+    return 0;
+  }
+  ///////////verificar outra vez se left e right estão bem
+  int comp = strcmp(raiz->entry->key, key);
+  if(comp>=0)
+    raiz->left = inserirEntry(raiz->left, key, value);
+  else
+    raiz->right = inserirEntry(raiz->right, key, value);
+}
+
 
 
 /* Função para obter da árvore o valor associado à chave key.
@@ -100,70 +105,54 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
 int tree_del(struct tree_t *tree, char *key){
   if(tree==NULL)
     return -1;
-  if(tree->raiz == NULL)
-    return 0;
-  else if(entry_compare(key, tree->raiz->entry->key)==-1)
-    tree->raiz->left = tree_del(tree->raiz->left, key);
-  else if(entry_compare(key, tree->raiz->entry->key)==1)
-    tree->raiz->right = tree_del(tree->raiz->right, key);
 
-  else{
-    if(tree->raiz->left == NULL){
-      return 0;
-    }else 
-      return 1;
-  }
+  deleteNode(tree->raiz, char *key)
 }
-
-
-
-
 struct node_t * minValueNode(struct node_t *node){
    struct node_t *current = node;
    while (current && current->left != NULL)
       current = current->left;
    return current;
 }
-/*
-struct node* deleteNode(struct node* root, int key){
-   if (root == NULL) return root;
-   if (key < root->key)
-      root->left = deleteNode(root->left, key);
-   else if (key > root->key)
-      root->right = deleteNode(root->right, key);
-   else{
-      if (root->left == NULL){
-         struct node *temp = root->right;
-         free(root);
-         return temp;
-      }
-      else if (root->right == NULL){
-         struct node *temp = root->left;
-         free(root);
-         return temp;
-      }
-      struct node* temp = minValueNode(root->right);
-      root->key = temp->key;
-      root->right = deleteNode(root->right, temp->key);
-   }
-   return root;
+
+int deleteNode(struct node_t *raiz, *char key){
+  if (raiz == NULL) 
+    return 0;
+  int comp = strcmp(raiz->entry->key, key);
+
+  if (cmp == 1)
+    raiz->left = deleteNode(raiz->left, key);
+  else if (cmp == -1)
+    raiz->right = deleteNode(raiz->right, key);
+  else{
+    if (raiz->left == NULL){
+      struct node_t *temp = raiz->right;
+      free(raiz);
+      return 0;
+    }
+    else if (raiz->right == NULL){
+      struct node_t *temp = raiz->left;
+      free(raiz);
+      return 0;
+    }
+    struct node_t *temp = minValueNode(raiz->right);
+    raiz->key = temp->key;
+    raiz->right = deleteNode(raiz->right, temp->key);
+  }
+   return 0;
 }
 
-
-
-
-
-*/
 
 
 
 /* Função que devolve o número de elementos contidos na árvore.
  */
 int tree_size(struct tree_t *tree){
-    if(tree==NULL || tree->raiz==NULL)
-        return 0;
-    else
-        return (tree_size(tree->raiz->left) +1 + tree_size(tree->raiz->right));  //este +1 podem pensar que eh o node em que estamos
+  struct node_t *correnre= tree->raiz;
+  if(tree==NULL || tree->raiz==NULL)
+    return 0;
+  else
+    return (tree_size(corrente->left) +1 + tree_size(corrente->right));  //este +1 podem pensar que eh o node em que estamos
 }
 
 
