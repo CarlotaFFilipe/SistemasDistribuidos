@@ -33,12 +33,17 @@ int testPutInexistente() {
 		key[i] = (char*)malloc(16*sizeof(char));
 		sprintf(key[i],"a/key/b-%d",i);
 		data[i] = data_create2(strlen(key[i])+1,strdup(key[i]));
-
 		tree_put(tree,key[i],data[i]);
 	}
+printTree(tree);
+printf("\n AQUIIIIIIIII   SIZEEEEEEE: %s\n","ffbfd");
+
+
 
 	assert(tree_size(tree) == 1024);
 	result = (tree_size(tree) == 1024);
+//printf("\n AQUIIIIIIIII   SIZEEEEEEE: %d\n",tree_size(tree));
+
 
 	for(i=0; i<1024; i++) {
 		d = tree_get(tree,key[i]);

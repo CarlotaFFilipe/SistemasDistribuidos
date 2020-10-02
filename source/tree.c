@@ -22,15 +22,6 @@ struct tree_t *tree_create(){
   return tree;  //acho que se ocorrer algo de errado no malloc, tree fica a null
 }
 
-/* Função para libertar toda a memória ocupada por uma árvore.
- */
-void tree_destroy(struct tree_t *tree){
-  if(tree == NULL)
-    return;
-  freeTree(tree->raiz); //deviamos fazer dentro de um while? Ja nao me lembro como fazer recursao muito bem....
-  free(tree);
-  tree = NULL;
-}
 
 
 void freeTree( struct node_t *raiz ){
@@ -46,6 +37,37 @@ void freeTree( struct node_t *raiz ){
 }
 
 
+/* Função para libertar toda a memória ocupada por uma árvore.
+ */
+void tree_destroy(struct tree_t *tree){
+  if(tree == NULL)
+    return;
+  freeTree(tree->raiz); //deviamos fazer dentro de um while? Ja nao me lembro como fazer recursao muito bem....
+  free(tree);
+  tree = NULL;
+}
+
+
+
+
+
+
+int inserirEntry(struct node_t* raiz, char* key, struct data_t *value){
+  if (raiz == NULL){
+    struct node_t *novo = malloc(sizeof(struct node_t));
+    novo->entry = entry_create(key, value);
+    novo->left= novo->right= NULL;
+  }else{
+    int comp = strcmp(raiz->entry->key, key);
+    if(comp>0)
+      inserirEntry(raiz->left, key, value);
+    else if(comp==0)
+      return -1;
+    else
+      inserirEntry(raiz->right, key, value);
+  }
+  return 0;
+}
 /* Função para adicionar um par chave-valor à árvore.
  * Os dados de entrada desta função deverão ser copiados, ou seja, a
  * função vai *COPIAR* a key (string) e os dados para um novo espaço de
@@ -57,27 +79,47 @@ void freeTree( struct node_t *raiz ){
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
   if(tree==NULL)
     return -1;
-  return inserirEntry(tree->raiz);
+  return inserirEntry(tree->raiz, key, value);
 
 }
 
-int inserirEntry(struct node* node, char* key){
-  if (node == NULL){
-    struct node_t *novo = (struct node_t *)malloc(sizeof(struct node_t));
-    strcpy(novo->entry->key, key);
-    novo->left= novo->right= NULL;
-    return 0;
-  }
-  ///////////verificar outra vez se left e right estão bem
-  int comp = strcmp(raiz->entry->key, key);
-  if(comp>=0)
-    raiz->left = inserirEntry(raiz->left, key, value);
-  else
-    raiz->right = inserirEntry(raiz->right, key, value);
+
+
+
+
+
+
+
+void printTree(struct tree_t* tree){
+   printT(tree->raiz);
+
+}
+
+void printT(struct node_t* root){
+ if(root!=NULL){
+   printT(root->left);
+   printf(" %s ",root->entry->key);
+   printT(root->right);
+ }
 }
 
 
 
+
+
+
+
+struct node_t* searchFor(struct node_t *raiz, char* key){
+   int comp = strcmp(raiz->entry->key, key);
+   if(raiz == NULL || comp==0){
+     return raiz;
+   }
+   if(comp == -1)
+     return searchFor(raiz->right, key);
+   else
+     return searchFor(raiz->left, key); 
+
+}
 /* Função para obter da árvore o valor associado à chave key.
  * A função deve devolver uma cópia dos dados que terão de ser
  * libertados no contexto da função que chamou tree_get, ou seja, a
@@ -88,8 +130,18 @@ int inserirEntry(struct node* node, char* key){
  * Devolve NULL em caso de erro.
  */
 struct data_t *tree_get(struct tree_t *tree, char *key){
-
+   if(tree==NULL)
+     return NULL;
+   struct node_t *novo = (struct node_t *) searchFor(tree->raiz, key);
+   return novo->entry->value;
 }
+
+
+
+
+
+
+
 
 
 
@@ -98,16 +150,6 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
 //////////////////////////////////////////////////////////////////////
 
 
-/* Função para remover um elemento da árvore, indicado pela chave key,
- * libertando toda a memória alocada na respetiva operação tree_put.
- * Retorna 0 (ok) ou -1 (key not found).
- */
-int tree_del(struct tree_t *tree, char *key){
-  if(tree==NULL)
-    return -1;
-
-  deleteNode(tree->raiz, char *key)
-}
 struct node_t * minValueNode(struct node_t *node){
    struct node_t *current = node;
    while (current && current->left != NULL)
@@ -115,14 +157,14 @@ struct node_t * minValueNode(struct node_t *node){
    return current;
 }
 
-int deleteNode(struct node_t *raiz, *char key){
+int deleteNode(struct node_t *raiz, char *key){
   if (raiz == NULL) 
     return 0;
   int comp = strcmp(raiz->entry->key, key);
 
-  if (cmp == 1)
+  if (comp > 1)
     raiz->left = deleteNode(raiz->left, key);
-  else if (cmp == -1)
+  else if (comp < -1)
     raiz->right = deleteNode(raiz->right, key);
   else{
     if (raiz->left == NULL){
@@ -136,42 +178,82 @@ int deleteNode(struct node_t *raiz, *char key){
       return 0;
     }
     struct node_t *temp = minValueNode(raiz->right);
-    raiz->key = temp->key;
-    raiz->right = deleteNode(raiz->right, temp->key);
+    raiz->entry->key = temp->entry->key;
+    raiz->right = deleteNode(raiz->right, temp->entry->key);
   }
    return 0;
 }
 
+/* Função para remover um elemento da árvore, indicado pela chave key,
+ * libertando toda a memória alocada na respetiva operação tree_put.
+ * Retorna 0 (ok) ou -1 (key not found).
+ */
+int tree_del(struct tree_t *tree, char *key){
+  if(tree==NULL)
+    return -1;
+
+  return deleteNode(tree->raiz,key);
+}
 
 
+
+
+
+
+
+
+
+int true_size(struct node_t *raiz){
+  if(raiz==NULL)
+    return 0;
+  else 
+    return (true_size(raiz->left) + 1 + true_size(raiz->right));//este +1 podem pensar que eh o node em que estamos
+
+}
 
 /* Função que devolve o número de elementos contidos na árvore.
  */
 int tree_size(struct tree_t *tree){
-  struct node_t *correnre= tree->raiz;
-  if(tree==NULL || tree->raiz==NULL)
-    return 0;
-  else
-    return (tree_size(corrente->left) +1 + tree_size(corrente->right));  //este +1 podem pensar que eh o node em que estamos
+  if(tree==NULL)
+    return -1;
+  return true_size(tree->raiz);
 }
 
 
-/* Função que devolve a altura da árvore.
- */
-int tree_height(struct tree_t *tree){
-    if(tree==NULL)
-        return;
-    if(tree->raiz==NULL)
+
+
+
+
+
+
+
+int recursive_height(struct node_t *raiz){
+   if(raiz==NULL)
         return 0;
     else{
-        int altura_esquerda = tree_height(tree->raiz->left);
-        int altura_direita = tree_height(tree->raiz->right);
+        int altura_esquerda = tree_height(raiz->left);
+        int altura_direita = tree_height(raiz->right);
         if(altura_esquerda > altura_direita)
             return altura_esquerda +1;
         else
             return altura_direita + 1;
     }
 }
+
+/* Função que devolve a altura da árvore.
+ */
+int tree_height(struct tree_t *tree){
+    if(tree==NULL)
+        return -1;
+    return recursive_height;
+    
+}
+
+
+
+
+
+
 
 /* Função que devolve um array de char* com a cópia de todas as keys da
  * árvore, colocando o último elemento do array com o valor NULL e
