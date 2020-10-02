@@ -70,5 +70,5 @@ void data_replace(struct data_t *data, int new_size, void *new_data){
   free(data->data);
   data->data = NULL;
   data->datasize = new_size;
-  data->data=new_data;
+  data->data = new_data;
 }

@@ -109,12 +109,13 @@ int tree_del(struct tree_t *tree, char *key){
 
   else{
     if(tree->raiz->left == NULL){
-
-    }
+      return 0;
+    }else 
+      return 1;
   }
 }
 
-/*
+
 
 
 struct node_t * minValueNode(struct node_t *node){
@@ -123,6 +124,7 @@ struct node_t * minValueNode(struct node_t *node){
       current = current->left;
    return current;
 }
+/*
 struct node* deleteNode(struct node* root, int key){
    if (root == NULL) return root;
    if (key < root->key)
