@@ -49,10 +49,10 @@ test_serialization: $(OBJ)test_serialization.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ
 	$(CC) $(OBJ)test_serialization.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o -o binary/test_serialization
 
 run:
-	./binary/test_data
+#	./binary/test_data
 #	valgrind --leak-check=yes ./binary/test_data
-#	./binary/test_entry
-#	valgrind --leak-check=yes ./binary/test_entry
+	./binary/test_entry
+	valgrind --leak-check=yes ./binary/test_entry
 #	./binary/test_tree
 #	valgrind --leak-check=yes ./binary/test_tree
 #	./binary/test_serialization
