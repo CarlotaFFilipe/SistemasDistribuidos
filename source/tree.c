@@ -66,9 +66,9 @@ struct node_t* searchFor(struct node_t *raiz, char* key){
    if(comp==0){
      return raiz;
    }else if(comp <1){
-     return searchFor(raiz->right, key);
+     raiz->right = searchFor(raiz->right, key);
    }else{
-     return searchFor(raiz->left, key); 
+     raiz->left = searchFor(raiz->left, key); 
    }
 //Nao existe essa key na tree
    return NULL;
@@ -125,28 +125,6 @@ int tree_size(struct tree_t *tree){
 
 
 
-
-
-/*
-
-int inserirEntry(struct node_t* raiz, char* key, struct data_t *value){
-  if (raiz == NULL){
-    struct node_t *novo = malloc(sizeof(struct node_t));
-    novo->entry = entry_create(key, value);
-    novo->left= novo->right= NULL;
-    raiz=novo;
-    
-  }else{
-    int comp = strcmp(raiz->entry->key, key);
-    if(comp>0)
-      inserirEntry(raiz->left, key, value);
-    else if(comp==0)
-      return -1;
-    else
-      inserirEntry(raiz->right, key, value);
-  }
-  return 0;
-}
 /* Função para adicionar um par chave-valor à árvore.
  * Os dados de entrada desta função deverão ser copiados, ou seja, a
  * função vai *COPIAR* a key (string) e os dados para um novo espaço de
@@ -154,17 +132,10 @@ int inserirEntry(struct node_t* raiz, char* key, struct data_t *value){
  * a função tem de substituir a entrada existente pela nova, fazendo
  * a necessária gestão da memória para armazenar os novos dados.
  * Retorna 0 (ok) ou -1 em caso de erro.
- 
-int tree_put(struct tree_t *tree, char *key, struct data_t *value){
-  if(tree==NULL)
-    return -1;
-  return inserirEntry(tree->raiz, key, value);
+ */
 
-}*/
-
-
-boolean isLeaf(struct node_t *raiz){
-  return (raiz->left==NULL && raiz->right==NULL);
+int isLeaf(struct node_t *raiz){
+  return (raiz->left==NULL && raiz->right==NULL)? 1:0 ;
 }
 
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
@@ -184,9 +155,9 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
     }
     //andar para a frente, sem recursao
 int i=0;
-    while(isLeaf(corrente)){
+    while(corrente->left != NULL || corrente -> right != NULL ){
 i++;
-printf("i-  %d    \n", i);
+printf("entra no while %d -  %s    \n", i, key);
       int comp = strcmp(corrente->entry->key,key);
       if(comp>0){
         corrente = corrente->left;
@@ -195,12 +166,10 @@ printf("vai para a esquerda %d -  %s    \n", i, key);
         corrente = corrente->right;
 printf("vai para a direita %d -  %s    \n", i, key);
       }
-//printf("procura pelo 10-  %s    \n", key);
     }
-//printf("procura pelo 10-  %s    \n", key);
     //chegou a folha da aevore,
     int comp = strcmp(corrente->entry->key,key);
-    if(comp>0){
+    if(comp > 0){
       corrente->left = newnode;
 printf("meteu um novo node a esquera -  %s    \n", newnode->entry->key);
     }else{
@@ -230,8 +199,9 @@ printf("meteu um novo node a direita -  %s    \n", newnode->entry->key);
 
 
 void printTree(struct tree_t* tree){
+printf("\n");
    printT(tree->raiz);
-
+printf("\n");
 }
 
 void printT(struct node_t* root){
