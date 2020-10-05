@@ -162,6 +162,11 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
 
 }*/
 
+
+boolean isLeaf(struct node_t *raiz){
+  return (raiz->left==NULL && raiz->right==NULL);
+}
+
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
   if(tree==NULL || strlen(key)<=0 || value==NULL)
     return -1;
@@ -179,7 +184,7 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
     }
     //andar para a frente, sem recursao
 int i=0;
-    while(corrente->left != NULL || corrente->right !=NULL){
+    while(isLeaf(corrente)){
 i++;
 printf("i-  %d    \n", i);
       int comp = strcmp(corrente->entry->key,key);
