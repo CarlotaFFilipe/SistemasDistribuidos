@@ -61,14 +61,15 @@ void tree_destroy(struct tree_t *tree){
 struct node_t* searchFor(struct node_t *raiz, char* key){
    if(raiz ==NULL || strlen(key)<=0){
      return NULL;
-}
+   }
    int comp = strcmp(raiz->entry->key, key);
    if(comp==0){
      return raiz;
    }else if(comp <1){
-     raiz->right = searchFor(raiz->right, key);
+//printf("quantas vezes passara? - onde estou: %s  o que procuro: %s   \n", raiz->entry->key, key);
+     return searchFor(raiz->right, key);
    }else{
-     raiz->left = searchFor(raiz->left, key); 
+     raiz->left= searchFor(raiz->left, key); 
    }
 //Nao existe essa key na tree
    return NULL;
@@ -123,6 +124,40 @@ int tree_size(struct tree_t *tree){
 
 
 
+/*
+
+struct node_t * inserirEntry(struct node_t* raiz, struct entry_t *entry){
+
+  if(raiz==NULL){
+    struct node_t *node= malloc(sizeof(struct node_t*));
+    node->entry=entry;
+    node->left=node->right=NULL;
+    raiz=node;
+printf("\n Estamos na key: %s\n",raiz->entry->key);
+    return raiz;
+  }
+  int cmp= strcmp(raiz->entry->key, entry->key);
+  if(cmp==0){
+    entry_replace(raiz->entry, entry->key,entry->value);
+    return raiz;
+  }else if(cmp > 0){
+    raiz->left = inserirEntry(raiz->left, entry);
+  }else{
+    raiz->right = inserirEntry(raiz->right, entry);
+  }
+  return NULL;
+}
+
+ 
+ 
+int tree_put(struct tree_t *tree, char *key, struct data_t *value){
+  if(tree==NULL)
+    return -1;
+  struct entry_t *entry = entry_create(key, value);
+  return (inserirEntry(tree->raiz, entry)==NULL)? -1:0;
+}
+
+*/
 
 
 /* Função para adicionar um par chave-valor à árvore.
@@ -134,63 +169,46 @@ int tree_size(struct tree_t *tree){
  * Retorna 0 (ok) ou -1 em caso de erro.
  */
 
-int isLeaf(struct node_t *raiz){
-  return (raiz->left==NULL && raiz->right==NULL)? 1:0 ;
-}
 
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
   if(tree==NULL || strlen(key)<=0 || value==NULL)
     return -1;
   struct node_t *corrente = tree->raiz;
-  //ainda nao existe nenhuma entry com essa key
-  if(tree_get(tree,key)==NULL){
-    //criar novo node
-    struct node_t *newnode = malloc(sizeof(struct node_t));
-    newnode->entry = entry_create(key, value);
-    newnode->left= newnode->right= NULL;
-    //Se for o primeiro elemento da tree
-    if(tree_size(tree) == 0){
-      tree->raiz = newnode;
-      return 0;
-    }
-    //andar para a frente, sem recursao
-int i=0;
-    while(corrente->left != NULL || corrente -> right != NULL ){
-i++;
-printf("entra no while %d -  %s    \n", i, key);
-      int comp = strcmp(corrente->entry->key,key);
-      if(comp>0){
-        corrente = corrente->left;
-printf("vai para a esquerda %d -  %s    \n", i, key);
-      }else{
-        corrente = corrente->right;
-printf("vai para a direita %d -  %s    \n", i, key);
-      }
-    }
-    //chegou a folha da aevore,
-    int comp = strcmp(corrente->entry->key,key);
-    if(comp > 0){
-      corrente->left = newnode;
-printf("meteu um novo node a esquera -  %s    \n", newnode->entry->key);
-    }else{
-      corrente->right = newnode;
-printf("meteu um novo node a direita -  %s    \n", newnode->entry->key);
-    }
+  struct node_t *newnode = malloc(sizeof(struct node_t));
+  newnode->entry = entry_create(key, value);
+  newnode->left= newnode->right= NULL;
+  //Se for o primeiro elemento da tree
+  if(tree_size(tree) == 0){
+    tree->raiz = newnode;
     return 0;
-  }else{//ja existe entry com esta key, temos de a substituir
-    while(corrente != NULL){
-      int comp = strcmp(corrente->entry->key,key);
-      if(comp == 0){
-      entry_destroy(corrente->entry);
-      corrente->entry = entry_create(key, value);;
-        return 0;
-      }else if(comp>0)
-        corrente = corrente->left;
-      else 
-        corrente = corrente->right;
+  }
+  int cmp=0;
+  while(corrente->left != NULL || corrente ->right != NULL ){
+//printf("\n AQUIIIIIIIII : %s\n",key);
+    cmp= strcmp(corrente->entry->key, key);
+    if(cmp==0){
+      entry_destroy(corrente->entry);//entry_replace?????
+      newnode->left = corrente->left;
+      newnode->right = corrente->right;
+      corrente = newnode;
+      return 0;
+    }else if(cmp>0){
+      corrente = corrente->left;
+//printf("vai para a esquerda %s    \n", key);
+    }else{
+      corrente = corrente->right;
+//printf("vai para a direita %s    \n",key);
     }
   }
-  return -1;
+printf("\n AQUIIIIIIIII : %s\n",key);
+  if(cmp>0){
+    corrente->left = newnode;
+//printf("\n#################meteu um novo node a esquera -  %s    ##############\n", newnode->entry->key);
+  }else{ //nao nos temos de preocupar se for igual
+    corrente->right = newnode;
+//printf("\n#################meteu um novo node a direita -  %s    ###############\n", newnode->entry->key);
+  }
+  return 0;
 }
 
 
