@@ -55,16 +55,15 @@ void tree_destroy(struct tree_t *tree){
 
 
 struct node_t* searchFor(struct node_t *raiz, char* key){
-   if(raiz ==NULL || strlen(key)<=0){
-     return NULL;
-}
+   if(raiz == NULL || strlen(key)<=0)
+     return raiz;
    int comp = strcmp(raiz->entry->key, key);
    if(comp==0){
      return raiz;
-   }else if(comp <1){
-     raiz->right = searchFor(raiz->right, key);
+   }else if(comp <0){
+     return searchFor(raiz->right, key);
    }else{
-     raiz->left = searchFor(raiz->left, key); 
+     return searchFor(raiz->left, key); 
    }
 //Nao existe essa key na tree
    return NULL;
@@ -84,7 +83,9 @@ struct data_t *tree_get(struct tree_t *tree, char *key){
    struct node_t *novo = (struct node_t *) searchFor(tree->raiz, key);
    if(novo==NULL)
      return NULL;
-   return novo->entry->value;
+   struct data_t *dup= data_dup(novo->entry->value);
+//printf("\ndentro do get: %d\n", dup->data);
+   return dup;
 
 }
 
@@ -169,9 +170,6 @@ printf("\n AQUIIIIIIIII : %s\n",key);
   return 0;
 }
 
-
-
-
 */
 
 
@@ -209,6 +207,8 @@ struct node_t * inserirEntry(struct node_t* raiz, struct entry_t *entry){
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
   if(tree==NULL)
     return -1;
+
+struct node_t *newnode = malloc(sizeof(struct node_t));
   if(tree_size(tree)==0){
     struct node_t *newnode = malloc(sizeof(struct node_t));
     newnode->entry = entry_create(key, value);
@@ -236,7 +236,7 @@ printf("\n \n");
 void printT(struct node_t* root){
  if(root!=NULL){
    printT(root->left);
-   printf(" %s ",root->entry->key);
+   printf("|key: %s data: %s |",root->entry->key, root->entry->value->data);
    printT(root->right);
  }
 }

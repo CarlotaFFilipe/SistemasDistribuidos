@@ -68,10 +68,9 @@ struct entry_t *entry_dup(struct entry_t *entry){
 void entry_replace(struct entry_t *entry, char *new_key, struct data_t *new_value){
   if(entry == NULL || strlen(new_key) <=0 || new_key==NULL || new_value == NULL)
     return;
-  //free(entry->value);
-//entry->value=new_value;
   data_replace(entry->value, new_value->datasize, new_value);
-  entry->value=new_value;
+  free(entry->value);
+  entry->value = new_value;
   free(entry->key);
   entry->key= new_key;
 

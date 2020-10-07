@@ -33,22 +33,15 @@ int testPutInexistente() {
 		key[i] = (char*)malloc(16*sizeof(char));
 		sprintf(key[i],"a/key/b-%d",i);
 		data[i] = data_create2(strlen(key[i])+1,strdup(key[i]));
-
 		tree_put(tree,key[i],data[i]);
-//printTree(tree);
-
 	}
-
-
 
 	assert(tree_size(tree) == 1024);
 	result = (tree_size(tree) == 1024);
 
-//printf("\n  result:  %d\n", result);
 
-	for(i=0; i<10; i++) {
+	for(i=0; i<1024; i++) {
 		d = tree_get(tree,key[i]);
-
 		assert(d->datasize == data[i]->datasize);
 		assert(memcmp(d->data,data[i]->data,d->datasize) == 0);
 		assert(d->data != data[i]->data);
@@ -56,7 +49,7 @@ int testPutInexistente() {
 		result = result && (d->datasize == data[i]->datasize && 
                            memcmp(d->data,data[i]->data,d->datasize) == 0 &&
                            d->data != data[i]->data);//eh este que esta mal, porque eh preciso fazer uma copia????????
-//printf("result: %d\n",d->data != data[i]->data);
+
 		data_destroy(d);
 	}
 
@@ -65,7 +58,7 @@ int testPutInexistente() {
 		data_destroy(data[i]);
 	}
 
-	tree_destroy(tree);
+	//tree_destroy(tree);
 	
 	printf("tree - testPutInexistente: %s\n",result?"passou":"não passou");
 	return result;
@@ -252,7 +245,7 @@ int main() {
 
 	score += testPutInexistente();
 
-	score += testPutExistente();
+	//score += testPutExistente();
 
 	//score += testDelInexistente();
 
