@@ -17,7 +17,6 @@
  */
 struct tree_t *tree_create(){
   struct tree_t *tree = malloc(sizeof(struct tree_t));
-  //tree->raiz = malloc(sizeof(tree->raiz));
   tree->raiz = NULL;
   return tree;  //acho que se ocorrer algo de errado no malloc, tree fica a null
 }
@@ -55,21 +54,17 @@ void tree_destroy(struct tree_t *tree){
 
 
 
-
-
-
 struct node_t* searchFor(struct node_t *raiz, char* key){
    if(raiz ==NULL || strlen(key)<=0){
      return NULL;
-   }
+}
    int comp = strcmp(raiz->entry->key, key);
    if(comp==0){
      return raiz;
    }else if(comp <1){
-//printf("quantas vezes passara? - onde estou: %s  o que procuro: %s   \n", raiz->entry->key, key);
-     return searchFor(raiz->right, key);
+     raiz->right = searchFor(raiz->right, key);
    }else{
-     raiz->left= searchFor(raiz->left, key); 
+     raiz->left = searchFor(raiz->left, key); 
    }
 //Nao existe essa key na tree
    return NULL;
@@ -126,50 +121,6 @@ int tree_size(struct tree_t *tree){
 
 /*
 
-struct node_t * inserirEntry(struct node_t* raiz, struct entry_t *entry){
-
-  if(raiz==NULL){
-    struct node_t *node= malloc(sizeof(struct node_t*));
-    node->entry=entry;
-    node->left=node->right=NULL;
-    raiz=node;
-printf("\n Estamos na key: %s\n",raiz->entry->key);
-    return raiz;
-  }
-  int cmp= strcmp(raiz->entry->key, entry->key);
-  if(cmp==0){
-    entry_replace(raiz->entry, entry->key,entry->value);
-    return raiz;
-  }else if(cmp > 0){
-    raiz->left = inserirEntry(raiz->left, entry);
-  }else{
-    raiz->right = inserirEntry(raiz->right, entry);
-  }
-  return NULL;
-}
-
- 
- 
-int tree_put(struct tree_t *tree, char *key, struct data_t *value){
-  if(tree==NULL)
-    return -1;
-  struct entry_t *entry = entry_create(key, value);
-  return (inserirEntry(tree->raiz, entry)==NULL)? -1:0;
-}
-
-*/
-
-
-/* Função para adicionar um par chave-valor à árvore.
- * Os dados de entrada desta função deverão ser copiados, ou seja, a
- * função vai *COPIAR* a key (string) e os dados para um novo espaço de
- * memória que tem de ser reservado. Se a key já existir na árvore,
- * a função tem de substituir a entrada existente pela nova, fazendo
- * a necessária gestão da memória para armazenar os novos dados.
- * Retorna 0 (ok) ou -1 em caso de erro.
- */
-
-
 int tree_put(struct tree_t *tree, char *key, struct data_t *value){
   if(tree==NULL || strlen(key)<=0 || value==NULL)
     return -1;
@@ -193,10 +144,17 @@ int tree_put(struct tree_t *tree, char *key, struct data_t *value){
       corrente = newnode;
       return 0;
     }else if(cmp>0){
-      corrente = corrente->left;
+///quando o no ainda tem filhos ha esquerda
+      if(corrente->left != NULL)
+        corrente = corrente->left;
+      else //quando nao tem
+        break;//nao pode ser break.....
 //printf("vai para a esquerda %s    \n", key);
     }else{
-      corrente = corrente->right;
+      if(corrente->right != NULL)
+        corrente = corrente->right;
+      else
+        break;
 //printf("vai para a direita %s    \n",key);
     }
   }
@@ -205,7 +163,7 @@ printf("\n AQUIIIIIIIII : %s\n",key);
     corrente->left = newnode;
 //printf("\n#################meteu um novo node a esquera -  %s    ##############\n", newnode->entry->key);
   }else{ //nao nos temos de preocupar se for igual
-    corrente->right = newnode;
+    corrente->right = newnode;//o key-1 vai para aqui
 //printf("\n#################meteu um novo node a direita -  %s    ###############\n", newnode->entry->key);
   }
   return 0;
@@ -214,12 +172,65 @@ printf("\n AQUIIIIIIIII : %s\n",key);
 
 
 
+*/
+
+
+
+
+struct node_t * inserirEntry(struct node_t* raiz, struct entry_t *entry){
+  if(raiz==NULL){
+    struct node_t *node= malloc(sizeof(struct node_t*));
+    node->entry=entry;
+    node->left=node->right=NULL;
+    raiz=node;
+    return raiz;
+  }
+  int cmp= strcmp(raiz->entry->key, entry->key);
+  if(cmp==0){
+    entry_replace(raiz->entry, entry->key,entry->value);
+    return raiz;
+  }else if(cmp > 0){
+    raiz->left = inserirEntry(raiz->left, entry);
+  }else{
+    raiz->right = inserirEntry(raiz->right, entry);
+  }
+  return raiz;
+}
+
+/* Função para adicionar um par chave-valor à árvore.
+ * Os dados de entrada desta função deverão ser copiados, ou seja, a
+ * função vai *COPIAR* a key (string) e os dados para um novo espaço de
+ * memória que tem de ser reservado. Se a key já existir na árvore,
+ * a função tem de substituir a entrada existente pela nova, fazendo
+ * a necessária gestão da memória para armazenar os novos dados.
+ * Retorna 0 (ok) ou -1 em caso de erro.*/
+ 
+ 
+int tree_put(struct tree_t *tree, char *key, struct data_t *value){
+  if(tree==NULL)
+    return -1;
+  if(tree_size(tree)==0){
+    struct node_t *newnode = malloc(sizeof(struct node_t));
+    newnode->entry = entry_create(key, value);
+    newnode->left= newnode->right= NULL;
+    tree->raiz = newnode;
+    return 0;
+  }
+  struct entry_t *entry = entry_create(key, value);
+  return (inserirEntry(tree->raiz, entry)==NULL)? -1:0;
+
+}
+
+
+
+
 
 
 void printTree(struct tree_t* tree){
-printf("\n");
+printf("\n \n");
    printT(tree->raiz);
-printf("\n");
+printf("\n \n");
+
 }
 
 void printT(struct node_t* root){
@@ -306,23 +317,35 @@ int recursive_height(struct node_t *raiz){
 int tree_height(struct tree_t *tree){
     if(tree==NULL)
         return -1;
-    return recursive_height;
+    return recursive_height(tree->raiz);
     
 }
 
-
-
-
-
-
+/*
+char **tree_get_keys_rec(struct node_t *raiz){
+  if(raiz!=NULL){
+    tree_get_keys_rec(raiz->left);
+    sprintf(keys[],"");
+    tre_get_keys_rec(raiz->right);
+  }
+}
+*/
 
 /* Função que devolve um array de char* com a cópia de todas as keys da
  * árvore, colocando o último elemento do array com o valor NULL e
  * reservando toda a memória necessária.
  */
 char **tree_get_keys(struct tree_t *tree){
-
+ /* if(tree==NULL)
+    return NULL;
+  return tre_get_keys_rec(tree->raiz);
+*/
 }
+
+
+
+
+
 
 /* Função que liberta toda a memória alocada por tree_get_keys().
  */
