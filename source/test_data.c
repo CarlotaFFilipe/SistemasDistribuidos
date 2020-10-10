@@ -180,19 +180,22 @@ int testReplace(){
 	char *data_s2 = strdup("123456");
 	data_size = strlen(data_s)+1;
 	data_size2 = strlen(data_s2)+1;
+
+
 	printf("Módulo data -> teste testReplace:");
 
 	data = data_create2(data_size, data_s);
-	data_replace(data, data_size2, data_s2);	
-	result = ((data->data) == data_s2);
+	
+	data_replace(data, data_size2, data_s2);
 
+	result = (data->data == data_s2);
 
 	result = result &&
 		 ((strcmp(data->data, data_s2) == 0) && (data->datasize == data_size2));
 
 	data_destroy(data);
 
-	printf("data - testReplace: %s\n",result?"passou":"não passou");
+	printf("data - testCreate2: %s\n",result?"passou":"não passou");
 	return result;
 }
 

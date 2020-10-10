@@ -15,23 +15,13 @@
 struct entry_t *entry_create(char *key, struct data_t *data){
   if(key == NULL || data == NULL || data->datasize <= 0 || data->data == NULL) 
     return NULL;
-  struct entry_t *entry = malloc(strlen(key) * data->datasize * sizeof(struct entry_t));
-  entry->key = key; //memcpy
-  entry->value = data; //memcpy
+  struct entry_t *entry = malloc(sizeof(struct entry_t));
+  entry->key = key;
+  entry->value = data;
   return entry;
 }
 
-/* Função que inicializa os elementos de uma entrada na tabela com o
- * valor NULL.
- */
-void entry_initialize(struct entry_t *entry){
-  if(entry != NULL){
-    entry->key = NULL;
-    //Nao sei qual usar
-    entry->value = data_create(0);
-    //entry->value = NULL;
-  }
-}
+
 
 /* Função que elimina uma entry, libertando a memória por ela ocupada
  */
@@ -39,9 +29,9 @@ void entry_destroy(struct entry_t *entry){
   if(entry != NULL){
     data_destroy(entry->value);
     free(entry->key);
-    entry->key = NULL; //Pode nao ser necessario
+    //entry->key = NULL; //Pode nao ser necessario
     free(entry);
-    entry = NULL; //Pode nao ser necessario
+    //entry = NULL; //Pode nao ser necessario
   }
 }
 
@@ -53,11 +43,9 @@ struct entry_t *entry_dup(struct entry_t *entry){
     return NULL;
   else{
     struct entry_t *entrydup = malloc(sizeof(struct entry_t));
-    char *keydup = malloc(strlen(entry->key) * sizeof(char) + 1); //se bem me lembro,em c sabemos que eh o final de uma string quando encontramos \0.
-    memcpy(keydup, entry->key, strlen(entry->key) + 1);
-    entrydup->key = keydup; //memcpy
-    struct data_t *data = data_dup(entry->value);
-    entrydup->value = data; //memcpy
+    entrydup->key = malloc(strlen(entry->key) * sizeof(char) + 1); 
+    memcpy(entrydup->key, entry->key, strlen(entry->key) + 1);
+    entrydup->value = data_dup(entry->value);
     return entrydup;
   }
 }
@@ -68,8 +56,8 @@ struct entry_t *entry_dup(struct entry_t *entry){
 void entry_replace(struct entry_t *entry, char *new_key, struct data_t *new_value){
   if(entry == NULL || strlen(new_key) <=0 || new_key==NULL || new_value == NULL)
     return;
-  data_replace(entry->value, new_value->datasize, new_value);
-  free(entry->value);
+  // data_replace(entry->value, new_value->datasize, new_value);
+  data_destroy(entry->value);
   entry->value = new_value;
   free(entry->key);
   entry->key= new_key;

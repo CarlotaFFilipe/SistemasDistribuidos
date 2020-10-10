@@ -24,7 +24,7 @@ int data_to_buffer(struct data_t *data, char **data_buf){
   *data_buf = malloc(tamanho);
 
   memcpy(*data_buf, &(data->datasize), sizeof(int));
-  memcpy(*data_buf + sizeof(int),data->data,data->datasize);
+  memcpy(*data_buf + sizeof(int), data->data, data->datasize);
 
   return tamanho;
 }
@@ -38,10 +38,10 @@ struct data_t *buffer_to_data(char *data_buf, int data_buf_size){
   if(data_buf == NULL || data_buf_size == -1)
     return NULL;
   struct data_t *data = malloc(sizeof(struct data_t));
-
-  memcpy(&(data->datasize),data_buf,sizeof(int));
-  data->data = malloc(data_buf_size-sizeof(int));
+  memcpy(&(data->datasize), data_buf, sizeof(int));
+  data->data = malloc(data_buf_size - sizeof(int));
   memcpy(data->data,data_buf + sizeof(int),data_buf_size-sizeof(int));
+
 
   return data;
 }
@@ -51,19 +51,26 @@ struct data_t *buffer_to_data(char *data_buf, int data_buf_size){
  * buffer alocado ou -1 em caso de erro.
  */
 int entry_to_buffer(struct entry_t *data, char **entry_buf){
+  char *aux;
+  int strl;
+  int tamanho_key;
+  int tamanho_data;
   if(data == NULL || entry_buf == NULL)
     return -1;
-  int strl = strlen(data->key)+1;
-  int tamanho = (sizeof(int) + strl + sizeof(int) + data->value->datasize);
 
-  *entry_buf = malloc(tamanho);
+  strl = strlen(data->key)+1;
 
-  memcpy(*entry_buf,&strl ,sizeof(int));
+  tamanho_key = sizeof(int) + strl;
+  *entry_buf = malloc(tamanho_key);
+  memcpy(*entry_buf, &strl, sizeof(int));
   memcpy(*entry_buf + sizeof(int), data->key,strl);
-  memcpy(*entry_buf + sizeof(int) + strl,&(data->value->datasize),sizeof(int));
-  memcpy(*entry_buf + sizeof(int) + strl + sizeof(int), data->value->data,data->value->datasize);
 
-  return tamanho;
+  tamanho_data = data_to_buffer(data->value, &aux);
+  *entry_buf = realloc(*entry_buf, tamanho_key + tamanho_data);
+  memcpy(*entry_buf + tamanho_key, aux, tamanho_data);
+  free(aux);
+
+  return tamanho_key + tamanho_data;
 }
 
 /* De-serializa a mensagem contida em entry_buf, com tamanho
@@ -96,7 +103,11 @@ struct entry_t *buffer_to_entry(char *entry_buf, int entry_buf_size){
  * buffer ou -1 em caso de erro.
  */
 int tree_to_buffer(struct tree_t *tree, char **tree_buf){
-
+  if(tree==NULL || tree_buf==NULL){
+    return -1;
+  }
+  
+  
 }
 
 /* De-serializa a mensagem contida em tree_buf, com tamanho
@@ -104,6 +115,6 @@ int tree_to_buffer(struct tree_t *tree, char **tree_buf){
  * tree_t, cujo espaco em memoria deve ser reservado.
  * Devolve NULL em caso de erro.
  */
-struct entry_t *buffer_to_tree(char *tree_buf, int tree_buf_size){
+struct tree_t *buffer_to_tree(char *tree_buf, int tree_buf_size){
   
 }
