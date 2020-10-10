@@ -15,7 +15,7 @@
 struct entry_t *entry_create(char *key, struct data_t *data){
   if(key == NULL || data == NULL || data->datasize <= 0 || data->data == NULL) 
     return NULL;
-  struct entry_t *entry = malloc(sizeof(struct entry_t));
+  struct entry_t *entry =(struct entry_t*) malloc(sizeof(struct entry_t));
   entry->key = key;
   entry->value = data;
   return entry;
@@ -42,8 +42,8 @@ struct entry_t *entry_dup(struct entry_t *entry){
   if(entry == NULL)//entry->value->datasize <= 0 || entry->value->data == NULL
     return NULL;
   else{
-    struct entry_t *entrydup = malloc(sizeof(struct entry_t));
-    entrydup->key = malloc(strlen(entry->key) * sizeof(char) + 1); 
+    struct entry_t *entrydup = (struct entry_t*) malloc(sizeof(struct entry_t));
+    entrydup->key = (char*) malloc(strlen(entry->key) * sizeof(char) + 1); 
     memcpy(entrydup->key, entry->key, strlen(entry->key) + 1);
     entrydup->value = data_dup(entry->value);
     return entrydup;
@@ -70,7 +70,7 @@ void entry_replace(struct entry_t *entry, char *new_key, struct data_t *new_valu
 */
 int entry_compare(struct entry_t *entry1, struct entry_t *entry2){
   if(entry1==NULL || entry2 == NULL)
-    return;
+    return NULL;
   int comp = strcmp(entry1->key, entry2->key);
   if(comp == 0)
     return 0;

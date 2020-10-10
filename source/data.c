@@ -16,7 +16,7 @@
 struct data_t *data_create(int size){
   if(size <= 0)
     return NULL;
-  struct data_t *d1= malloc(size * sizeof(struct data_t));
+  struct data_t *d1= (struct data_t*) malloc(size * sizeof(struct data_t));
   d1->datasize = size;
   d1->data = malloc(size * sizeof(d1->data));
   return d1;
@@ -28,7 +28,7 @@ struct data_t *data_create(int size){
 struct data_t *data_create2(int size, void *data){
   if(data == NULL || size <= 0)
     return NULL;
-  struct data_t *d2 = malloc(size * sizeof(struct data_t));
+  struct data_t *d2 = (struct data_t*) malloc(size * sizeof(struct data_t));
   d2->datasize = size;
   d2->data = data; //deveriamos fazer memcpy?
   return d2;
@@ -53,7 +53,7 @@ struct data_t *data_dup(struct data_t *data){
   if(data == NULL || data->datasize <= 0 || data->data == NULL)
     return NULL;
   else{
-    struct data_t *dup = malloc(sizeof(struct data_t));
+    struct data_t *dup = (struct data_t*) malloc(sizeof(struct data_t));
     dup->datasize = data->datasize;
     dup->data = malloc(data->datasize * sizeof(char));
     memcpy(dup->data, data->data, data->datasize);

@@ -8,7 +8,8 @@ INCLUDE = include/
 OBJ = object/
 BIN = binary/
 SRC = source/
-FLAG = gcc -g -w -Wall -I include/ -c
+#FLAG = gcc -g -w -Wall -I include/ -c
+FLAG = gcc -g -I include/ -c
 
 all : data.o entry.o tree.o serialization.o test_data.o test_entry.o test_tree.o test_serialization.o test_data test_entry test_tree test_serialization run
 
@@ -49,11 +50,11 @@ test_serialization: $(OBJ)test_serialization.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ
 	$(CC) $(OBJ)test_serialization.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o -o binary/test_serialization
 
 run:
-#	./binary/test_data
+	./binary/test_data
 #	valgrind --leak-check=yes ./binary/test_data
-#	./binary/test_entry
+	./binary/test_entry
 #	valgrind --leak-check=yes ./binary/test_entry
-#	./binary/test_tree
+	./binary/test_tree
 #	valgrind --leak-check=yes ./binary/test_tree
 	./binary/test_serialization
 #	valgrind --leak-check=yes ./binary/test_serialization

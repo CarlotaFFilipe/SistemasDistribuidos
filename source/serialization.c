@@ -21,6 +21,7 @@ int data_to_buffer(struct data_t *data, char **data_buf){
   }
 
   int tamanho = (sizeof(int) + data->datasize);
+//(void*)
   *data_buf = malloc(tamanho);
 
   memcpy(*data_buf, &(data->datasize), sizeof(int));
@@ -37,7 +38,7 @@ int data_to_buffer(struct data_t *data, char **data_buf){
 struct data_t *buffer_to_data(char *data_buf, int data_buf_size){
   if(data_buf == NULL || data_buf_size == -1)
     return NULL;
-  struct data_t *data = malloc(sizeof(struct data_t));
+  struct data_t *data = (struct data_t*) malloc(sizeof(struct data_t));
   memcpy(&(data->datasize), data_buf, sizeof(int));
   data->data = malloc(data_buf_size - sizeof(int));
   memcpy(data->data,data_buf + sizeof(int),data_buf_size-sizeof(int));
@@ -61,6 +62,7 @@ int entry_to_buffer(struct entry_t *data, char **entry_buf){
   strl = strlen(data->key)+1;
 
   tamanho_key = sizeof(int) + strl;
+//(void*)
   *entry_buf = malloc(tamanho_key);
   memcpy(*entry_buf, &strl, sizeof(int));
   memcpy(*entry_buf + sizeof(int), data->key,strl);
@@ -81,13 +83,13 @@ int entry_to_buffer(struct entry_t *data, char **entry_buf){
 struct entry_t *buffer_to_entry(char *entry_buf, int entry_buf_size){
   if(entry_buf == NULL || entry_buf_size == -1)
     return NULL;
-  struct entry_t *entry = malloc(sizeof(struct entry_t));
+  struct entry_t *entry = (struct entry_t*) malloc(sizeof(struct entry_t));
   int strl =-1;
   memcpy(&strl,entry_buf,sizeof(int));
-  entry->key = malloc(strl);
+  entry->key = (char *)malloc(strl);
   memcpy(entry->key ,entry_buf + sizeof(int),strl);
 
-  struct data_t *data = malloc(sizeof(struct data_t));
+  struct data_t *data = (struct data_t*) malloc(sizeof(struct data_t));
 
   memcpy(&(data->datasize),entry_buf +sizeof(int) +strl,sizeof(int));
   data->data = malloc(data->datasize);

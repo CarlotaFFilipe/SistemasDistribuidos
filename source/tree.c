@@ -18,7 +18,7 @@
 /////////////////////////////////////////////////////////////
 
 struct node_t * node_create(struct entry_t *entry){
-  struct node_t *newnode = malloc(sizeof(struct node_t));
+  struct node_t *newnode = (struct node_t*) malloc(sizeof(struct node_t));
   newnode->entry = entry;
   newnode->left= newnode->right= NULL;
   return newnode;
@@ -34,21 +34,21 @@ void node_destroy( struct node_t *raiz ){
 }
 
 struct node_t * node_insert(struct node_t* raiz, struct entry_t * entry, int *pwas_inserted){
-  if(raiz==NULL){
-  *pwas_inserted=0;
-    raiz=node_create(entry);
+  if(raiz == NULL){
+    *pwas_inserted = 0;
+    raiz = node_create(entry);
     return raiz;
   }
-  int cmp= strcmp(raiz->entry->key, entry->key);
-  if(cmp==0){
-  *pwas_inserted=0;
+  int cmp= entry_compare(raiz->entry, entry);
+  if(cmp == 0){
+  *pwas_inserted = 0;
 //destroir data antigo e alocar memoria com o novo size
     entry_destroy(raiz->entry);
     raiz->entry = entry;
 
-  }else if(cmp > 0){
+  }else if(cmp == 1){
     raiz->left = node_insert(raiz->left, entry, pwas_inserted);
-  }else{
+  }else{//if cmp == -1
     raiz->right = node_insert(raiz->right, entry, pwas_inserted);
   }
   return raiz;
@@ -59,7 +59,6 @@ struct node_t * node_delete(struct node_t *raiz, char *key, int *was_deleted){
     return raiz;
 
   int comp = strcmp(raiz->entry->key, key);
-
   if (comp > 0)
     raiz->left = node_delete(raiz->left, key, was_deleted);
   else if (comp < 0)
@@ -69,25 +68,25 @@ struct node_t * node_delete(struct node_t *raiz, char *key, int *was_deleted){
 
     //o node a apagar tem 2 filhos
     if(raiz->left != NULL && raiz->right != NULL){
-      struct node_t *temp = node_min_value(raiz->right);
+      struct node_t *corrente = node_min_value(raiz->right);
       entry_destroy(raiz->entry);
       // reutilizamos o mesmo node, apagamos o node original antigo mais a baixo
-      raiz->entry = entry_dup(temp->entry);
-      raiz->right = node_delete(raiz->right, temp->entry->key, was_deleted);
+      raiz->entry = entry_dup(corrente->entry);
+      raiz->right = node_delete(raiz->right, corrente->entry->key, was_deleted);
     }
     // o node nao tem o filho da esquerda
     else if (raiz->left == NULL){
-      struct node_t *temp = raiz->right;
+      struct node_t *corrente = raiz->right;
       entry_destroy(raiz->entry);
       free(raiz);
-      return temp;
+      return corrente;
     }
     // o node nao tem o filho da direita
     else{ // if (raiz->right == NULL)
-      struct node_t *temp = raiz->left;
+      struct node_t *corrente = raiz->left;
       entry_destroy(raiz->entry);
       free(raiz);
-      return temp;
+      return corrente;
     }
   }
    return raiz;
@@ -131,7 +130,7 @@ printf("\n \n");
 void printT(struct node_t* root){
  if(root!=NULL){
    printT(root->left);
-   printf("|key: %s data: %s |",root->entry->key, root->entry->value->data);
+   printf("|key: %s data: %s |",root->entry->key, (char*)root->entry->value->data);
    printT(root->right);
  }
 }
@@ -170,7 +169,7 @@ char **tree_get_keys_rec(struct node_t *raiz, char** algo,int *offset){
  * Em caso de erro retorna NULL.
  */
 struct tree_t *tree_create(){
-  struct tree_t *tree = malloc(sizeof(struct tree_t));
+  struct tree_t *tree = (struct tree_t*) malloc(sizeof(struct tree_t));
   if ( tree != NULL )
     tree->raiz = NULL;
   return tree;
