@@ -21,7 +21,15 @@ struct entry_t *entry_create(char *key, struct data_t *data){
   return entry;
 }
 
-
+/* Função que inicializa os elementos de uma entry com o
+ * valor NULL.
+ */
+void entry_initialize(struct entry_t *entry){
+  if(entry != NULL){
+    entry->key=NULL;
+    entry->value= data_create(0);
+  }
+}
 
 /* Função que elimina uma entry, libertando a memória por ela ocupada
  */
@@ -70,7 +78,7 @@ void entry_replace(struct entry_t *entry, char *new_key, struct data_t *new_valu
 */
 int entry_compare(struct entry_t *entry1, struct entry_t *entry2){
   if(entry1==NULL || entry2 == NULL)
-    return NULL;
+    return 1;//caso contrario
   int comp = strcmp(entry1->key, entry2->key);
   if(comp == 0)
     return 0;

@@ -33,6 +33,14 @@ void node_destroy( struct node_t *raiz ){
     }
 }
 
+
+/* Função para adicionar um par chave-valor à árvore recursivamente.
+ * Os dados de entrada desta função deverão ser copiados, ou seja, a
+ * função vai *COPIAR* a key (string) e os dados para um novo espaço de
+ * memória que tem de ser reservado. Se a key já existir na árvore,
+ * a função tem de substituir a entrada existente pela nova, fazendo
+ * a necessária gestão da memória para armazenar os novos dados.
+ * Retorna 0 (ok) ou -1 em caso de erro.*/
 struct node_t * node_insert(struct node_t* raiz, struct entry_t * entry, int *pwas_inserted){
   if(raiz == NULL){
     *pwas_inserted = 0;
@@ -41,7 +49,7 @@ struct node_t * node_insert(struct node_t* raiz, struct entry_t * entry, int *pw
   }
   int cmp= entry_compare(raiz->entry, entry);
   if(cmp == 0){
-  *pwas_inserted = 0;
+    *pwas_inserted = 0;
 //destroir data antigo e alocar memoria com o novo size
     entry_destroy(raiz->entry);
     raiz->entry = entry;
@@ -54,6 +62,11 @@ struct node_t * node_insert(struct node_t* raiz, struct entry_t * entry, int *pw
   return raiz;
 }
 
+
+/* Função para remover um elemento da árvore, recursivamente, indicado pela chave key,
+ * libertando toda a memória alocada na respetiva operação tree_put.
+ * Retorna 0 (ok) ou -1 (key not found).
+ */
 struct node_t * node_delete(struct node_t *raiz, char *key, int *was_deleted){
   if (raiz == NULL) 
     return raiz;
@@ -68,6 +81,7 @@ struct node_t * node_delete(struct node_t *raiz, char *key, int *was_deleted){
 
     //o node a apagar tem 2 filhos
     if(raiz->left != NULL && raiz->right != NULL){
+//vai a procura do no com o valor mais baixo do ramo da direita
       struct node_t *corrente = node_min_value(raiz->right);
       entry_destroy(raiz->entry);
       // reutilizamos o mesmo node, apagamos o node original antigo mais a baixo
@@ -92,8 +106,18 @@ struct node_t * node_delete(struct node_t *raiz, char *key, int *was_deleted){
    return raiz;
 }
 
+
+/* Função para obter da árvore o valor associado à chave key recursivamente.
+ * A função deve devolver uma cópia dos dados que terão de ser
+ * libertados no contexto da função que chamou tree_get, ou seja, a
+ * função aloca memória para armazenar uma *CÓPIA* dos dados da árvore,
+ * retorna o endereço desta memória com a cópia dos dados, assumindo-se
+ * que esta memória será depois libertada pelo programa que chamou
+ * a função.
+ * Devolve NULL em caso de erro.
+ */
 struct node_t* node_search(struct node_t *raiz, char* key){
-   if(raiz == NULL || strlen(key)<=0)
+   if(raiz == NULL)
      return raiz;
    int comp = strcmp(raiz->entry->key, key);
    if(comp==0){
@@ -105,6 +129,9 @@ struct node_t* node_search(struct node_t *raiz, char* key){
    }
 }
 
+/*Funcao que devolve o node com o valor mais baixo
+ *
+ */
 struct node_t * node_min_value(struct node_t *node){
    struct node_t *current = node;
    while (current && current->left != NULL)
@@ -112,11 +139,13 @@ struct node_t * node_min_value(struct node_t *node){
    return current;
 }
 
+/* Função que devolve o número de elementos contidos na árvore recursivamente.
+ */
 int node_size(struct node_t *raiz){
   if(raiz==NULL)
     return 0;
   else 
-    return (node_size(raiz->left) + 1 + node_size(raiz->right));//este +1 podem pensar que eh o node em que estamos
+    return (node_size(raiz->left) + 1 + node_size(raiz->right));
 
 }
 
@@ -135,12 +164,17 @@ void printT(struct node_t* root){
  }
 }
 
+
+/* Função que devolve a altura da árvore recursivamente.
+ */
 int recursive_height(struct node_t *raiz){
    if(raiz==NULL)
         return 0;
+    /*else if(raiz->left == NULL && raiz->right == NULL)
+        return 0;*/
     else{
-        int altura_esquerda = tree_height(raiz->left);
-        int altura_direita = tree_height(raiz->right);
+        int altura_esquerda = recursive_height(raiz->left);
+        int altura_direita = recursive_height(raiz->right);
         if(altura_esquerda > altura_direita)
             return altura_esquerda +1;
         else
@@ -148,17 +182,20 @@ int recursive_height(struct node_t *raiz){
     }
 }
 
-
-char **tree_get_keys_rec(struct node_t *raiz, char** algo,int *offset){
+/* Função que devolve um array de char* com a cópia de todas as keys da
+ * árvore, colocando o último elemento do array com o valor NULL e
+ * reservando toda a memória necessária.
+ */
+char **tree_get_keys_rec(struct node_t *raiz, char** keys, int *offset){
 
   if(raiz!=NULL){
-    tree_get_keys_rec(raiz->left, algo, offset);
-    algo[*offset]= (char*)malloc((strlen(raiz->entry->key)+1) * sizeof(char));
-    strcpy(algo[*offset],raiz->entry->key );
+    tree_get_keys_rec(raiz->left, keys, offset);
+    keys[*offset]= (char*)malloc((strlen(raiz->entry->key)+1) * sizeof(char));
+    strcpy(keys[*offset],raiz->entry->key );
     *offset += 1;
-    tree_get_keys_rec(raiz->right, algo, offset);
+    tree_get_keys_rec(raiz->right, keys, offset);
   }
-  return algo;
+  return keys;
 }
 
 /////////////////////////////////////////////////////////////
@@ -259,11 +296,11 @@ int tree_height(struct tree_t *tree){
 char **tree_get_keys(struct tree_t *tree){
   if(tree==NULL)
     return NULL;
-  int treeSize= tree_size(tree);
+  int treeSize = tree_size(tree);
   char **keys= (char**)  malloc((treeSize + 1)* sizeof(char*));
   keys[treeSize] = NULL;  
-  int offset=0;
-  keys=tree_get_keys_rec(tree->raiz, keys, &offset);
+  int offset = 0;
+  keys = tree_get_keys_rec(tree->raiz, keys, &offset);
   
   return keys;
 

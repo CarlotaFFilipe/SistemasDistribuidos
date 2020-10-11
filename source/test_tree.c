@@ -36,7 +36,7 @@ int testPutInexistente() {
 
 		tree_put(tree,key[i],data[i]);
 	}
-//printTree(tree);
+
 	assert(tree_size(tree) == 1024);
 	result = (tree_size(tree) == 1024);
 

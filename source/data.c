@@ -11,7 +11,7 @@
 #include "data.h"
 
 /* Função que cria um novo elemento de dados data_t e reserva a memória
- * necessária, especificada pelo parâmetro size
+ * necessária, especificada pelo parâmetro size 
  */
 struct data_t *data_create(int size){
   if(size <= 0)

@@ -43,21 +43,21 @@ test_data: $(OBJ)test_data.o $(OBJ)data.o
 test_entry: $(OBJ)test_entry.o $(OBJ)data.o $(OBJ)entry.o
 	$(CC) $(OBJ)test_entry.o $(OBJ)data.o $(OBJ)entry.o -o binary/test_entry
 
-test_tree: $(OBJ)test_tree.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o
-	$(CC) $(OBJ)test_tree.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o -o binary/test_tree
+test_tree: $(OBJ)test_tree.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o
+	$(CC) $(OBJ)test_tree.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o -o binary/test_tree
 
 test_serialization: $(OBJ)test_serialization.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o
 	$(CC) $(OBJ)test_serialization.o  $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o -o binary/test_serialization
 
 run:
 	./binary/test_data
-#	valgrind --leak-check=yes ./binary/test_data
+	valgrind --leak-check=yes ./binary/test_data
 	./binary/test_entry
-#	valgrind --leak-check=yes ./binary/test_entry
+	valgrind --leak-check=yes ./binary/test_entry
 	./binary/test_tree
-#	valgrind --leak-check=yes ./binary/test_tree
+	valgrind --leak-check=yes ./binary/test_tree
 	./binary/test_serialization
-#	valgrind --leak-check=yes ./binary/test_serialization
+	valgrind --leak-check=yes ./binary/test_serialization
 
 clean:
 	rm $(OBJ)*.o
