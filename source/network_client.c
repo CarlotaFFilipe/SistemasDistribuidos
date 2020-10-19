@@ -27,6 +27,7 @@
  */
 int network_connect(struct rtree_t *rtree){
   struct sockaddr_in server;
+    //criar socket TCP
   if ((rtree->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     free(rtree->hostname);
     //free(rtree->port); //porto eh int
@@ -34,7 +35,6 @@ int network_connect(struct rtree_t *rtree){
     return -1;
   }
   //Preenche estrutura server para estabelecer conexão dando o endereco e o porto
-  //rtree->server = malloc(sizeof ( struct sockaddr));
   server.sin_family = AF_INET;
   server.sin_port = htons(atoi(rtree->port));
   if (inet_pton(AF_INET, rtree->hostname, &server.sin_addr) < 1) {
@@ -52,6 +52,7 @@ int network_connect(struct rtree_t *rtree){
     close(rtree->socket);
     return -1;
   }
+  printf("Ligado ao servidor no porto %d, socket %d\n", rtree->port, rtree->socket);
   return 0;
 
 
@@ -68,16 +69,35 @@ int network_connect(struct rtree_t *rtree){
 struct message_t *network_send_receive(struct rtree_t * rtree,
                                        struct message_t *msg){
 
+  int socket = rtable->socket;
+  //enviar mensagem
+  if (snd_msg_socket(msg, socket) == -1){
+    printf("Erro ao enviar mensagem para o servidor. Ligacao fechada\n");
+    close(socket);
+    return NULL;
+  }
+  printf("\nMensagem enviada\n\nA espera da resposta do servidor...\n");
+  //mensagem recebida
+  struct message_t * rmsg = rcv_msg_socket(socket);
+  if (msg == NULL){
+    printf("Erro ao receber mensagem do servidor. Ligacao fechada\n");
+    close(socket);
+    return NULL;
+  }
+
+  printf("\nMensagem recebida\n");
+  return rmsg;
+
+
 }
 
 /* A função network_close() fecha a ligação estabelecida por
  * network_connect().
  */
 int network_close(struct rtree_t * rtree){
-  if(close(rtree->socket) == -1){
-    free(rtree);
-    return -1;
-  }
-  free(rtree);
+  close(rtree->socket)//devo fazer if ==-1 em caso de erro?
+  free(rtree->host);
+  free(rtree->port);
+  free(rtree)
   return 0;
 }

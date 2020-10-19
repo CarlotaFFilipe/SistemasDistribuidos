@@ -3,17 +3,19 @@
 // Leonor Candeias n51057
 // Mafalda Paço n53507
 
-#include "client_stub.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "sdmessage.pb-c.h"
+#include "message-private.h"
+//#include "client_stub.h"
 #include "client_stub-private.h"
 #include "network_client.h"
 #include "data.h"
 #include "entry.h"
-#include "tree.h"//?????
-#include "tree-private.h"//??????
-#include "message-private.h"
-#include "serialization.h"
-#include <string.h>
-#include "sdmessage.pb-c.h"
+#include "tree.h"
+//#include "serialization.h"
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
@@ -24,7 +26,29 @@ struct rtree_t;
  * Retorna NULL em caso de erro.
  */
 struct rtree_t *rtree_connect(const char *address_port){
+  if(address_port == NULL){
+    return NULL;
+  }
+  //Criaçao de rtree e seus atributos
+  struct rtree_t *rt = (struct rtree_t) malloc(sizeof(struct rtree_t));
+  if (rt == NULL){
+    perror("Falta de memoria\n");
+    return NULL;
+  }
+  rt->hostname =(char *) malloc(sizeof(char *));
+  rt->port =(char *) malloc(sizeof(char *));
+  //usamos strcpy porque temos a certeza que eh uma string
+  strcpy(rt->hostname, strtok(address_port,":"));
+  strcpy(rt->port, strtok(NULL,":"));
 
+  if (network_connect(rt) == 0){
+    return rt;
+  } else{
+    free(rt->host);
+    free(rt->port);
+    free(rt);
+    return NULL;
+  }
 }
 
 /* Termina a associação entre o cliente e o servidor, fechando a 
@@ -34,8 +58,7 @@ struct rtree_t *rtree_connect(const char *address_port){
 int rtree_disconnect(struct rtree_t *rtree){
     if(rtree == NULL)
         return -1;
-//fazer network_close e free
-    return 0;
+    return network_close(rtree);
 }
 
 /* Função para adicionar um elemento na árvore.
@@ -43,14 +66,59 @@ int rtree_disconnect(struct rtree_t *rtree){
  * Devolve 0 (ok, em adição/substituição) ou -1 (problemas).
  */
 int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
+  int res = -1;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
 
+  if(rtree == NULL || entry==NULL)
+    return res;
+
+  if (put_request_message(&msg, entry->key, entry->value) == -1)
+    return res;
+  
+  rmsg = network_send_receive(rtree, &msg);
+  //apos o envio e a recepcao das mensagens, free do
+  //allocado previamente em put_request_message
+  free(msg.keys);
+  free(msg.value);
+  if (rmsg != NULL){
+    if (rmsg->opcode == 41){//existe resposta do servidor
+      res = 0;
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+  return res;
 }
 
 /* Função para obter um elemento da árvore.
  * Em caso de erro, devolve NULL.
  */
 struct data_t *rtree_get(struct rtree_t *rtree, char *key){
+  struct data_t *res = NULL;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
+  
+  if(rtree == NULL || strlen(key)<=0)
+    return res;
 
+  if (get_request_message(&msg, key) == -1)
+    return res;
+  
+  rmsg = network_send_receive(rtree, &msg);
+  //apos o envio e a recepcao das mensagens, free do
+  //allocado previamente em put_request_message
+  free(msg.keys);
+  if (rmsg != NULL){
+    if (rmsg->opcode == 31 && rmsg->value_size >0){//existe resposta do servidor
+      res = data_create(rmsg->value_size);
+      if (res == NULL){
+        return NULL;
+      }
+      memcpy(res->data, rmsg->value, res->datasize);
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+  return res;
 }
 
 /* Função para remover um elemento da árvore. Vai libertar 
@@ -58,19 +126,71 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key){
  * Devolve: 0 (ok), -1 (key not found ou problemas).
  */
 int rtree_del(struct rtree_t *rtree, char *key){
+  int res = -1;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
 
+  if(rtree == NULL || strlen(key)<=0)
+    return res;
+
+  if (del_request_message(&msg, entry->key, entry->value) == -1)
+    return res;
+  
+  rmsg = network_send_receive(rtree, &msg);
+  //apos o envio e a recepcao das mensagens, free do
+  //allocado previamente em put_request_message
+  free(msg.keys);
+  if (rmsg != NULL){
+    if (rmsg->opcode == 21){//existe resposta do servidor
+      res = 0;
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+  return res;
 }
 
 /* Devolve o número de elementos contidos na árvore.
  */
 int rtree_size(struct rtree_t *rtree){
+  int res = -1;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
 
+  if(rtree == NULL)
+    return res;
+
+  size_request_message(&msg);
+  
+  rmsg = network_send_receive(rtree, &msg);
+  if (rmsg != NULL){
+    if (rmsg->opcode == 11){//existe resposta do servidor
+      res = rmsg->result;
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+  return res;
 }
 
 /* Função que devolve a altura da árvore.
  */
 int rtree_height(struct tree_t *tree){
+  int res = -1;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
 
+  if(rtree == NULL)
+    return res;
+
+  height_request_message(&msg);
+  
+  rmsg = network_send_receive(rtree, &msg);
+  if (rmsg != NULL){
+    if (rmsg->opcode == 61){//existe resposta do servidor
+      res = rmsg->result;
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+  return res;
 }
 
 /* Devolve um array de char* com a cópia de todas as keys da árvore,
@@ -83,5 +203,5 @@ char **rtree_get_keys(struct rtree_t *rtree){
 /* Liberta a memória alocada por rtree_get_keys().
  */
 void rtree_free_keys(char **keys){
-
+  tree_free_keys(keys);
 }
