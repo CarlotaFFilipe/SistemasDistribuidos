@@ -1,82 +1,44 @@
-# Grupo21
-# Carlota Filipe n51027
-# Leonor Candeias n51057
-# Mafalda Paço n51
+OBJ_dir = object/
+SRC_dir = source/
+BIN_dir = binary/
+INC_dir = include/
+LIB_dir = lib/
 
-CC=gcc
-INCLUDE = include/
-OBJ = object/
-BIN = binary/
-SRC = source/
-LIB = lib/
-FLAG = gcc -g -w -Wall -I include/ -I lib/ -c
-LINKFLAGS= ld -r
+#Alterar de acordo com a localizacao do protobuf nesta maquina
+PROTOC_dir=/usr/local/
 
-all: proto data.o entry.o tree.o serialization.o tree_cliente.o network_client.o network_server.o client_stub.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree_client tree_server
-
-proto: 
-	protoc --c_out=./lib/ sdmessage.proto
+CC = gcc
+CFLAGS = -Wall -g -O2 -I $(INC_dir)
+LDFLAGS = ${PROTOC_dir}lib/libprotobuf-c.a
+OBJS_lib = sdmessage.pb-c.o client_stub.o network_client.o message.o table.o list.o data.o entry.o
+OBJS_client = sdmessage.pb-c.o table-client.o network_client.o client_stub.o message.o data.o entry.o list.o table.o
+OBJS_server = sdmessage.pb-c.o table-server.o network_server.o table_skel.o message.o data.o entry.o list.o table.o
 
 
-data.o: $(INCLUDE)data.h
-	$(FLAG) $(SRC)data.c -o $(OBJ)data.o
+all: table-server table-client client-lib.o
 
-entry.o: $(INCLUDE)entry.h $(INCLUDE)data.h
-	$(FLAG) $(SRC)entry.c -o $(OBJ)entry.o
+client-lib.o: $(OBJS_lib)
+	ld -r $(addprefix $(OBJ_dir),$(OBJS_lib)) -o $(LIB_dir)client-lib.o
 
-tree.o: $(INCLUDE)tree.h $(INCLUDE)tree-private.h $(INCLUDE)data.h $(INCLUDE)entry.h
-	$(FLAG) $(SRC)tree.c -o $(OBJ)tree.o
+table-client: $(OBJS_client)
+	$(CC) $(addprefix $(OBJ_dir),$(OBJS_client)) $(LDFLAGS) -o $(BIN_dir)table-client
 
-serialization.o: $(INCLUDE)serialization.h $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)tree.h $(INCLUDE)tree-private.h
-	$(FLAG) $(SRC)serialization.c -o $(OBJ)serialization.o
+table-server: $(OBJS_server)
+	$(CC) $(addprefix $(OBJ_dir),$(OBJS_server)) $(LDFLAGS) -o $(BIN_dir)table-server
 
-###############fase 2
-tree_cliente.o:  $(INCLUDE)tree.h  $(INCLUDE)data.h  $(INCLUDE)entry.h  $(INCLUDE)tree-private.h  $(INCLUDE)client_stub-private.h  $(INCLUDE)network_client.h $(LIB)sdmessage.pb-c.h
-	$(FLAG) $(SRC)tree_client.c -o $(OBJ)tree_client.o
+%.o: $(SRC_dir)%.c $($@)
+	$(CC) $(CFLAGS) -c -o $(OBJ_dir)$@ $<
 
-network_client.o: $(INCLUDE)network_client.h $(INCLUDE)client_stub.h $(LIB)sdmessage.pb-c.h $(INCLUDE)message-private.h $(INCLUDE)client_stub-private.h
-	$(FLAG) $(SRC)network_client.c -o $(OBJ)network_client.o
+sdmessage.pb-c.o:
+	${PROTOC_dir}bin/protoc-c --c_out=. sdmessage.proto
+	@mv -f sdmessage.pb-c.c $(SRC_dir)
+	@mv -f sdmessage.pb-c.h $(INC_dir)
+	$(CC) -c -I $(INC_dir) $(SRC_dir)sdmessage.pb-c.c
+	@mv -f sdmessage.pb-c.o $(OBJ_dir)
 
-client_stub.o: $(INCLUDE)client_stub.h $(INCLUDE)client_stub-private.h $(INCLUDE)network_client.h $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)message-private.h $(INCLUDE)serialization.h $(LIB)sdmessage.pb-c.h
-	$(FLAG) $(SRC)client_stub.c -o $(OBJ)client_stub.o
-
-tree_skel.o: $(INCLUDE)serialization.h $(INCLUDE)tree_skel.h $(INCLUDE)tree.h $(INCLUDE)tree-private.h $(INCLUDE)message-private.h $(INCLUDE)data.h $(INCLUDE)entry.h
-	$(FLAG) $(SRC)tree_skel.c -o $(OBJ)tree_skel.o
-
-tree_server.o: $(INCLUDE)client_stub-private.h $(INCLUDE)network_server.h $(INCLUDE)tree-private.h $(INCLUDE)tree.h $(INCLUDE)data.h $(INCLUDE)entry.h
-	$(FLAG) $(SRC)tree_server.c -o $(OBJ)tree_server.o
-
-network_server.o: $(INCLUDE)tree_skel.h $(INCLUDE)network_server.h $(INCLUDE)message-private.h
-	$(FLAG) $(SRC)network_server.c -o $(OBJ)network_server.o
-
-sdmessage.pb-c.o: $(LIB)sdmessage.pb-c.h
-	$(FLAG) $(LIB)sdmessage.pb-c.c -o $(OBJ)sdmessage.pb-c.o
-
-client-lib.o: 
-	$(LINKFLAGS) $(OBJ)client_stub.o $(OBJ)network_client.o $(OBJ)data.o $(OBJ)entry.o $(OBJ)serialization.o $(OBJ)sdmessage.pb-c.o -o $(OBJ)client-lib.o 
-
-tree_client: $(OBJ)client-lib.o $(OBJ)tree_client.o
-	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_client
-
-tree_server:
-	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o $(OBJ)data.o $(OBJ)entry.o $(OBJ)list.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_server 
-
-
-
-
-
-
-run:
-#	./binary/test_data
-#	valgrind --leak-check=yes ./binary/test_data
-#	./binary/test_entry
-#	valgrind --leak-check=yes ./binary/test_entry
-#	./binary/test_tree
-#	valgrind --leak-check=yes ./binary/test_tree
-#	./binary/test_serialization
-#	valgrind --leak-check=yes ./binary/test_serialization
-##	./binary/tree_server 12345 2
-##	./binary/tree_client 127.0.0.1:12345
 clean:
-	rm $(OBJ)*.o
-	rm binary/*
+	@rm -f $(OBJ_dir)*
+	@rm -f $(LIB_dir)*
+	@rm -f $(BIN_dir)*
+	@rm -f $(INC_dir)/sdmessage.pb-c.h
+	@rm -f $(SRC_dir)/sdmessage.pb-c.c
