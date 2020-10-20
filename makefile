@@ -12,9 +12,9 @@ LIB = lib/
 FLAG = gcc -g -w -Wall -I include/ -I lib/ -c
 LINKFLAGS= ld -r
 
-all : data.o entry.o tree.o serialization.o test_data.o test_entry.o test_tree.o test_serialization.o test_data test_entry test_tree test_serialization run
+all: proto data.o entry.o tree.o serialization.o tree_cliente.o network_client.o network_server.o client_stub.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree_client tree_server
 
-proto:
+proto: 
 	protoc --c_out=./lib/ sdmessage.proto
 
 
