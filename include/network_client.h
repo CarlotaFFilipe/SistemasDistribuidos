@@ -6,6 +6,7 @@
 #ifndef _NETWORK_CLIENT_H
 #define _NETWORK_CLIENT_H
 
+#include "message-private.h"
 #include "client_stub.h"
 #include "sdmessage.pb-c.h"
 

@@ -8,12 +8,24 @@
 #include "client_stub-private.h"
 #include "data.h"
 #include "entry.h"
-
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
+#include <assert.h>*/
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <signal.h>
 
 int test_input(int argc){
   if(argc != 2){

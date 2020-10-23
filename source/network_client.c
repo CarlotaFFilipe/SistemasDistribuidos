@@ -69,7 +69,7 @@ int network_connect(struct rtree_t *rtree){
 struct message_t *network_send_receive(struct rtree_t * rtree,
                                        struct message_t *msg){
 
-  int socket = rtable->socket;
+  int socket = rtree->socket;
   //enviar mensagem
   if (snd_msg_socket(msg, socket) == -1){
     printf("Erro ao enviar mensagem para o servidor. Ligacao fechada\n");
@@ -95,9 +95,9 @@ struct message_t *network_send_receive(struct rtree_t * rtree,
  * network_connect().
  */
 int network_close(struct rtree_t * rtree){
-  close(rtree->socket)//devo fazer if ==-1 em caso de erro?
-  free(rtree->host);
+  close(rtree->socket);//devo fazer if ==-1 em caso de erro?
+  free(rtree->hostname);
   free(rtree->port);
-  free(rtree)
+  free(rtree);
   return 0;
 }

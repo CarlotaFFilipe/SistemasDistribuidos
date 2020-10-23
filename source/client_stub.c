@@ -15,11 +15,12 @@
 #include "data.h"
 #include "entry.h"
 #include "tree.h"
+#include "inet.h"
 //#include "serialization.h"
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
-struct rtree_t;
+//struct rtree_t;
 
 /* Função para estabelecer uma associação entre o cliente e o servidor, 
  * em que address_port é uma string no formato <hostname>:<port>.
@@ -30,7 +31,7 @@ struct rtree_t *rtree_connect(const char *address_port){
     return NULL;
   }
   //Criaçao de rtree e seus atributos
-  struct rtree_t *rt = (struct rtree_t) malloc(sizeof(struct rtree_t));
+  struct rtree_t *rt = (struct rtree_t *) malloc(sizeof(struct rtree_t *));
   if (rt == NULL){
     perror("Falta de memoria\n");
     return NULL;
@@ -44,7 +45,7 @@ struct rtree_t *rtree_connect(const char *address_port){
   if (network_connect(rt) == 0){
     return rt;
   } else{
-    free(rt->host);
+    free(rt->hostname);
     free(rt->port);
     free(rt);
     return NULL;
@@ -133,7 +134,7 @@ int rtree_del(struct rtree_t *rtree, char *key){
   if(rtree == NULL || strlen(key)<=0)
     return res;
 
-  if (del_request_message(&msg, entry->key, entry->value) == -1)
+  if (del_request_message(&msg, entry->key) == -1)
     return res;
   
   rmsg = network_send_receive(rtree, &msg);
@@ -178,12 +179,12 @@ int rtree_height(struct tree_t *tree){
   struct message_t msg, * rmsg;
   message_t__init(&msg);
 
-  if(rtree == NULL)
+  if(tree == NULL)
     return res;
 
   height_request_message(&msg);
   
-  rmsg = network_send_receive(rtree, &msg);
+  rmsg = network_send_receive(tree, &msg);
   if (rmsg != NULL){
     if (rmsg->opcode == 61){//existe resposta do servidor
       res = rmsg->result;
