@@ -2,6 +2,7 @@
 #include "message-private.h"
 #include "data.h"
 #include "inet.h"
+#include "serialization.h"
 
 
 
@@ -110,31 +111,24 @@ int write_nbytes (int socket, void * buf, int length){
 
 /*preenche a mensagem (ver protobuf) com os parametros do put
 *assim, o opcode eh 40, c_type eh 30, meter os dados do data na mensagem
-*so enviamos 1 key
 *return 0 se a operacao corre bem e -1 caso contrario
 */
-int put_request_message(struct message_t * msg, char * key, struct data_t * data){
+int put_request_message(struct message_t * msg, struct entry_t * entry){
   msg->opcode = 40;
   msg->c_type = 30;
   msg->value_size = data->datasize;
-  msg->value = malloc(data->datasize);
-  if (msg->value == NULL){
-    printf("Falta de memoria\n");
-    return -1;
-  }
-  memcpy(msg->value, data->data, data->datasize);
+  //msg->value = malloc(sizeof(char* ));
+  //Transformar entry para string e huardar tamanho em data_size
+  msg.data_size = entry_to_buffer(entry,&msg.data);
   msg->n_keys = 1;
-  msg->keys = strdup(key);
-  if (msg->keys == NULL){
-    printf("Falta de memoria\n");
-    return -1;
-  }
+
   return 0;
 }
 
 int put_response_message(struct message_t * msg, char * key, struct data_t * data){
-  msg->opcode += 1;
-  //msg->c_type = ;
+  msg->c_type = 60;
+  msg->data_size = 0;
+  msg->data = NULL;
   return 0;
 }
 
@@ -160,6 +154,7 @@ int get_request_message(struct message_t * msg, char * key){
 int get_response_message(struct message_t * msg, struct data_t * res){
   msg->opcode += 1;
   msg->c_type = 20;
+
   return 0;
 }
 
@@ -181,9 +176,11 @@ int del_request_message(struct message_t * msg, char * key){
   return 0;
 }
 
-int del_request_message(struct message_t * msg, char * key){
-
-
+int del_response_message(struct message_t * msg, char * key){
+  msg->c_type= 60;
+  msg->data_size = 0;
+  msg->data = NULL;
+  msg->n_keys = 0;
   return 0;
 }
 

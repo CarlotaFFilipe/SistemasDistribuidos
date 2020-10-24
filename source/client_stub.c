@@ -16,7 +16,6 @@
 #include "entry.h"
 #include "tree.h"
 #include "inet.h"
-//#include "serialization.h"
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
@@ -80,8 +79,8 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
-  free(msg.keys);
-  free(msg.value);
+  //free(msg.keys);
+  free(msg.data);
   if (rmsg != NULL){
     if (rmsg->opcode == 41){//existe resposta do servidor
       res = 0;

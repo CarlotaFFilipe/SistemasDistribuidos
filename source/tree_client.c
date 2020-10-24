@@ -102,8 +102,8 @@ int main(int argc, char **argv){
       struct data_t *data = data_create2(strlen(corrente),corrente);
       struct entry_t *entry = entry_create(key,data);
       rtree_put(rt,entry);
-      free(data);//destroy
-      free(entry);//destroy
+      data_destroy(data);//destroy
+      entry_destroy(entry);//destroy
       continue;
     }
     else if(strcmp(corrente,"getkeys") == 0){

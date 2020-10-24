@@ -32,16 +32,18 @@ int main(int argc, char **argv){
   if (testInput(argc) == -1)
     return -1;
   //buscar e guardar o porto.
-  int socket = network_server_init(atoi(argv[1]));
-  if(socket==-1)
+  int socket;
+  if((socket=network_server_init(atoi(argv[1])))==-1)
     return -1;
-
   if(tree_skel_init() == -1)
     return -1;
   //network_main_loop
+  int result;
+  if((result= network_main_loop(socket))==-1)
+    return -1;
   
   //detroir arvore e acabar a ligacao
   tree_skel_destroy();
-  //network_server_close();
+  network_server_close();
     
 }
