@@ -10,11 +10,22 @@
 //TODO: falta a parte dos sinais
 
 #include "tree_skel.h"
-#include "network_server.h"
+//#include "network_server.h"
 #include "message-private.h"
 #include "sdmessage.pb-c.h"
 
 #include <signal.h>
+#include <stdbool.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 //variaveis
 struct sockaddr_in server,client;
@@ -79,8 +90,7 @@ int network_main_loop(int listening_socket){
 
   
   while(true){
-    struct message_t *msg;
-    msg = network_receive(socket_cliente);
+    struct message_t *msg = network_receive(socket_cliente);
     if(msg == NULL){
       close(socket_cliente);
       printf("Erro ao receber mensagem\n");
