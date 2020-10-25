@@ -79,5 +79,19 @@ int invoke(struct message_t *msg){
         }
         put_response_message(msg);
         entry_destroy(entry);
+    }else if(msg->opcode == 50){ //getkeys
+        int size = tree_size(tree);
+        char** keys = tree_get_keys(tree);
+        if(keys == NULL)
+            return -1;
+        get_keys_response_message(msg, keys, size);
+        tree_free_keys(keys);
+        return 0;
+    }else if(msg->opcode == 60){//height
+        height_response_message(tree);
+        return 0;
+    }else{//opcode 99, o servidor nao deve receber este opcode
+        return -1;
     }
+
 }

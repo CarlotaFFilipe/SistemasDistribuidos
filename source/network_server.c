@@ -33,6 +33,8 @@ int socket_servidor,socket_cliente;
 socklen_t size_client;
 int option_name;
 
+struct message_t *network_receive(int client_socket);
+
 
 /* Função para preparar uma socket de receção de pedidos de ligação
  * num determinado porto.

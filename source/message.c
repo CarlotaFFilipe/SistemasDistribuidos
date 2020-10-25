@@ -4,6 +4,8 @@
 #include "inet.h"
 #include "serialization.h"
 
+char* arrayString_to_string ( char ** array, int n_keys, int length );
+
 
 
 int snd_msg_socket (struct message_t * msg, int socket){
@@ -223,10 +225,31 @@ void get_keys_request_message(struct message_t * msg){
 }
 
 int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys){
+  msg->opcode += 1;
+  msg->c_type = 40;
+  msg->n_keys = n_keys;
+  if(n_keys>0){
+    int sum = 0;
+    for (int i = 0; i < n_keys; i++)
+      sum += (strlen(keys[i]) + 1);
+    msg->data= arrayString_to_string(keys, n_keys, sum);
+  }
+
+//meter no final '\0'
+  memcpy(msg->data + sum, "\0", 1);
   return 0;
 }
 
-
+char* arrayString_to_string ( char ** array, int n_keys, int length ) {
+  //rever o tamanho
+  char * string = malloc(length);
+  //char * string = malloc(sizeof(char *));
+  for (int i = 0; i < n_keys; i++) {
+    strcat(string,array[i]); //memcpy??
+    strcat(string, " ");
+  }
+  return string;
+}
 
 
 
@@ -236,13 +259,6 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys){
 
 void error_response_message(struct message_t * msg){
   msg->opcode = 99;
-  msg->c_type = 60;
-  msg->value_size = 0;
-  msg->n_keys = 0;
-}
-
-void empty_response_message(struct message_t * msg){
-  msg->opcode += 1;
   msg->c_type = 60;
   msg->value_size = 0;
   msg->n_keys = 0;
