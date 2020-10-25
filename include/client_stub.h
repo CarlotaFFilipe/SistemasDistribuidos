@@ -48,7 +48,7 @@ int rtree_size(struct rtree_t *rtree);
 
 /* Função que devolve a altura da árvore.
  */
-int rtree_height(struct tree_t *tree);
+int rtree_height(struct rtree_t *rtree);
 
 /* Devolve um array de char* com a cópia de todas as keys da árvore,
  * colocando um último elemento a NULL.

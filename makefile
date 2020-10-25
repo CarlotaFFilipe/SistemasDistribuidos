@@ -31,6 +31,9 @@ serialization.o: $(INCLUDE)serialization.h $(INCLUDE)data.h $(INCLUDE)entry.h $(
 	$(FLAG) $(SRC)serialization.c -o $(OBJ)serialization.o
 
 ###############fase 2
+message.o: $(INCLUDE)inet.h $(INCLUDE)data.h $(INCLUDE)serialization.h $(INCLUDE)message-private.h $(LIB)sdmessage.pb-c.h
+	$(FLAG) $(SRC)message.c -o $(OBJ)message.o
+
 tree_cliente.o:  $(INCLUDE)tree.h  $(INCLUDE)data.h  $(INCLUDE)entry.h  $(INCLUDE)tree-private.h  $(INCLUDE)client_stub-private.h  $(INCLUDE)network_client.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)tree_client.c -o $(OBJ)tree_client.o
 

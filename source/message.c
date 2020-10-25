@@ -1,7 +1,11 @@
+
+
+
 #include "sdmessage.pb-c.h"
 #include "message-private.h"
 #include "data.h"
 #include "inet.h"
+#include "entry.h"
 #include "serialization.h"
 
 char* arrayString_to_string ( char ** array, int n_keys, int length );
@@ -118,16 +122,16 @@ int write_nbytes (int socket, void * buf, int length){
 int put_request_message(struct message_t * msg, struct entry_t * entry){
   msg->opcode = 40;
   msg->c_type = 30;
-  msg->value_size = data->datasize;
+  msg->data_size = entry->value->datasize;
   //msg->value = malloc(sizeof(char* ));
   //Transformar entry para string e huardar tamanho em data_size
-  msg.data_size = entry_to_buffer(entry,&msg.data);
+  msg->data_size = entry_to_buffer(entry,&msg->data);
   msg->n_keys = 1;
 
   return 0;
 }
 
-int put_response_message(struct message_t * msg, char * key, struct data_t * data){
+int put_response_message(struct message_t * msg){
   msg->c_type = 60;
   msg->data_size = 0;
   msg->data = NULL;
@@ -236,7 +240,7 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys){
   }
 
 //meter no final '\0'
-  memcpy(msg->data + sum, "\0", 1);
+  //memcpy(msg->data + sum, "\0", 1);
   return 0;
 }
 
@@ -260,6 +264,6 @@ char* arrayString_to_string ( char ** array, int n_keys, int length ) {
 void error_response_message(struct message_t * msg){
   msg->opcode = 99;
   msg->c_type = 60;
-  msg->value_size = 0;
+  msg->data_size = 0;
   msg->n_keys = 0;
 }

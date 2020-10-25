@@ -34,6 +34,7 @@ socklen_t size_client;
 int option_name;
 
 struct message_t *network_receive(int client_socket);
+int network_send(int client_socket, struct message_t *msg);
 
 
 /* Função para preparar uma socket de receção de pedidos de ligação

@@ -8,6 +8,8 @@
 
 #include "sdmessage.pb-c.h"
 #include "data.h"
+#include "entry.h"
+#include "serialization.h"
 
 //Renomeia a estrutura criada pelo protobuf
 #define message_t _MessageT
@@ -21,9 +23,9 @@ int read_nbytes (int socket, void * buf, int length);
 
 int write_nbytes (int socket, void * buf, int length);
 
-int put_request_message(struct message_t * msg, char * key, struct data_t * data);
+int put_request_message(struct message_t * msg, struct entry_t * entry);
 
-int put_response_message(struct message_t * msg, char * key, struct data_t * data);
+int put_response_message(struct message_t * msg);
 
 int get_request_message(struct message_t * msg, char * key);
 
@@ -47,6 +49,5 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys);
 
 void error_response_message(struct message_t * msg);
 
-void empty_response_message(struct message_t * msg);
 
 #endif

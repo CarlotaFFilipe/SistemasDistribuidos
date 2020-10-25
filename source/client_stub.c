@@ -9,12 +9,13 @@
 
 #include "sdmessage.pb-c.h"
 #include "message-private.h"
-//#include "client_stub.h"
+#include "client_stub.h"
 #include "client_stub-private.h"
 #include "network_client.h"
 #include "data.h"
 #include "entry.h"
 #include "tree.h"
+#include "serialization.h"
 #include "inet.h"
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h
@@ -73,7 +74,7 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
   if(rtree == NULL || entry==NULL)
     return res;
 
-  if (put_request_message(&msg, entry->key, entry->value) == -1)
+  if (put_request_message(&msg, entry) == -1)
     return res;
   
   rmsg = network_send_receive(rtree, &msg);
@@ -173,7 +174,7 @@ int rtree_size(struct rtree_t *rtree){
 
 /* Função que devolve a altura da árvore.
  */
-int rtree_height(struct tree_t *tree){
+int rtree_height(struct rtree_t *tree){
   int res = -1;
   struct message_t msg, * rmsg;
   message_t__init(&msg);
