@@ -12,7 +12,7 @@ LIB = lib/
 FLAG = gcc -g -w -Wall -I include/ -I lib/ -c
 LINKFLAGS= ld -r
 
-all: proto data.o entry.o tree.o serialization.o message.o tree_cliente.o network_client.o network_server.o client_stub.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree_client tree_server
+all: proto data.o entry.o tree.o serialization.o message.o network_client.o client_stub.o tree_cliente.o network_server.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree_client tree_server
 
 proto: 
 	protoc --c_out=./lib/ sdmessage.proto
@@ -34,35 +34,36 @@ serialization.o: $(INCLUDE)serialization.h $(INCLUDE)data.h $(INCLUDE)entry.h $(
 message.o: $(INCLUDE)inet.h $(INCLUDE)data.h $(INCLUDE)serialization.h $(INCLUDE)message-private.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)message.c -o $(OBJ)message.o
 
-tree_cliente.o:  $(INCLUDE)tree.h  $(INCLUDE)data.h  $(INCLUDE)entry.h  $(INCLUDE)tree-private.h  $(INCLUDE)client_stub-private.h  $(INCLUDE)network_client.h $(LIB)sdmessage.pb-c.h
+tree_cliente.o:  $(INCLUDE)data.h  $(INCLUDE)entry.h  $(INCLUDE)tree.h $(INCLUDE)client_stub-private.h $(INCLUDE)network_client.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)tree_client.c -o $(OBJ)tree_client.o
 
 network_client.o: $(INCLUDE)network_client.h $(INCLUDE)client_stub.h $(LIB)sdmessage.pb-c.h $(INCLUDE)message-private.h $(INCLUDE)client_stub-private.h
 	$(FLAG) $(SRC)network_client.c -o $(OBJ)network_client.o
 
-client_stub.o: $(INCLUDE)client_stub.h $(INCLUDE)client_stub-private.h $(INCLUDE)network_client.h $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)message-private.h $(INCLUDE)serialization.h $(LIB)sdmessage.pb-c.h
+client_stub.o: $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)tree.h $(INCLUDE)serialization.h $(INCLUDE)client_stub.h $(INCLUDE)client_stub-private.h $(INCLUDE)network_client.h $(INCLUDE)message-private.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)client_stub.c -o $(OBJ)client_stub.o
 
-tree_skel.o: $(INCLUDE)serialization.h $(INCLUDE)tree_skel.h $(INCLUDE)tree.h $(INCLUDE)tree-private.h $(INCLUDE)message-private.h $(INCLUDE)data.h $(INCLUDE)entry.h
+tree_skel.o: $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)tree.h $(INCLUDE)serialization.h $(INCLUDE)tree_skel.h $(INCLUDE)message-private.h  $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)tree_skel.c -o $(OBJ)tree_skel.o
 
-tree_server.o: $(INCLUDE)client_stub-private.h $(INCLUDE)network_server.h $(INCLUDE)tree-private.h $(INCLUDE)tree.h $(INCLUDE)data.h $(INCLUDE)entry.h
+tree_server.o: $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)tree.h $(INCLUDE)network_server.h
 	$(FLAG) $(SRC)tree_server.c -o $(OBJ)tree_server.o
 
-network_server.o: $(INCLUDE)tree_skel.h $(INCLUDE)network_server.h $(INCLUDE)message-private.h
+network_server.o: $(INCLUDE)tree_skel.h $(INCLUDE)network_server.h $(INCLUDE)message-private.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)network_server.c -o $(OBJ)network_server.o
 
 sdmessage.pb-c.o: $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(LIB)sdmessage.pb-c.c -o $(OBJ)sdmessage.pb-c.o
 
+##tree.o
 client-lib.o: 
-	$(LINKFLAGS) $(OBJ)client_stub.o $(OBJ)network_client.o $(OBJ)data.o $(OBJ)entry.o $(OBJ)serialization.o $(OBJ)sdmessage.pb-c.o $(OBJ)message.o -o $(OBJ)client-lib.o 
+	$(LINKFLAGS) $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)client_stub.o $(OBJ)network_client.o $(OBJ)sdmessage.pb-c.o -o $(OBJ)client-lib.o 
 
 tree_client: $(OBJ)client-lib.o $(OBJ)tree_client.o
 	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_client
-
+#message.o
 tree_server:
-	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o $(OBJ)data.o $(OBJ)entry.o $(OBJ)list.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_server 
+	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_server 
 
 
 

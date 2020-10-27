@@ -14,6 +14,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-//tamanho máximo da mensagem enviada pelo cliente
+//define o tamanho máximo da mensagem enviada pelo cliente
 #define MAX_MSG 2048 
 
