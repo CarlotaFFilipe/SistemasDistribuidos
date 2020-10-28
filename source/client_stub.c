@@ -31,25 +31,24 @@ struct rtree_t *rtree_connect(const char *address_port){
     return NULL;
   }
   //Criaçao de rtree e seus atributos
-  struct rtree_t *rt = (struct rtree_t *) malloc(sizeof(struct rtree_t *));
+  struct rtree_t *rt = (struct rtree_t *) malloc(sizeof(struct rtree_t));
   if (rt == NULL){
     perror("Falta de memoria\n");
     return NULL;
   }
-  rt->hostname =(char *) malloc(sizeof(char *));
-  rt->port =(char *) malloc(sizeof(char *));
+  rt->hostname =(char *) malloc(sizeof(char *)* 50);
+  rt->port =(char *) malloc(sizeof(char *)*10);
   //usamos strcpy porque temos a certeza que eh uma string
   strcpy(rt->hostname, strtok(address_port,":"));
   strcpy(rt->port, strtok(NULL,":"));
 
-  if (network_connect(rt) == 0){
-    return rt;
-  } else{
+  if (network_connect(rt) == -1){
     free(rt->hostname);
     free(rt->port);
     free(rt);
     return NULL;
   }
+  return rt;
 }
 
 /* Termina a associação entre o cliente e o servidor, fechando a 
@@ -104,20 +103,20 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key){
 
   if (get_request_message(&msg, key) == -1)
     return res;
-  
+
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
-  free(msg.keys);
   if (rmsg != NULL){
     if (rmsg->opcode == 31 && rmsg->data_size >0){//existe resposta do servidor
       res = data_create(rmsg->data_size);
       if (res == NULL){
         return NULL;
       }
-      memcpy(res->data, rmsg->data, res->datasize);
+      //memcpy(res->data, rmsg->data, res->datasize);
+      res->data = rmsg->data;
     }
-    message_t__free_unpacked(rmsg, NULL);
+    //message_t__free_unpacked(rmsg, NULL);
   }
   return res;
 }

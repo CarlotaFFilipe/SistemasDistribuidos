@@ -60,9 +60,8 @@ int invoke(struct message_t *msg){
 
 
     }else if(msg->opcode == 30){
-        struct data_t *data= tree_get(tree, msg->keys);
-        free(msg->keys);
-        //msg->keys= NULL;
+        struct data_t *data= tree_get(tree, msg->data);
+        free(msg->data);
         if(data == NULL){
             error_response_message(msg);
         }else{
@@ -73,16 +72,31 @@ int invoke(struct message_t *msg){
         }
         return 0;
     }else if(msg->opcode == 40){
-        struct entry_t *entry = buffer_to_entry(msg->data, msg->data_size);
+        //com o serialization
+        //struct entry_t *entry = buffer_to_entry(msg->data, msg->data_size);
+
+        struct entry_t *entry = malloc(sizeof(struct entry_t));
+        char *corrente;
+        corrente  = strtok(msg->data," ");
+        entry->key = corrente;
+        struct data_t *data = malloc(sizeof(struct data_t));
+        corrente = strtok(NULL, " ");
+        data->datasize = atoi(corrente);
+        corrente = strtok(NULL, " ");
+        data->data =corrente;
+         entry->value = data;
         int put = tree_put(tree, entry->key, entry->value);
+////data_destroy(data);
+//entry_destoy(entry);
         if(put == -1){
             msg->opcode = 99;
         }else{
             msg->opcode += 1;
         }
         put_response_message(msg);
-        entry_destroy(entry);
+        //entry_destroy(entry);
         return 0;
+
 
     }else if(msg->opcode == 50){ //getkeys
         int size = tree_size(tree);
@@ -92,10 +106,12 @@ int invoke(struct message_t *msg){
         get_keys_response_message(msg, keys, size);
         tree_free_keys(keys);
         return 0;
+
     }else if(msg->opcode == 60){//height
         int tamanho= tree_height(tree);
         height_response_message(tree, tamanho);
         return 0;
+
     }else{//opcode 99, o servidor nao deve receber este opcode
         return -1;
     }

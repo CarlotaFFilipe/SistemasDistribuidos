@@ -52,7 +52,7 @@ int network_connect(struct rtree_t *rtree){
     close(rtree->socket);
     return -1;
   }
-  printf("Ligado ao servidor no porto %d, socket %d\n", rtree->port, rtree->socket);
+  printf("Ligado ao servidor.\n");
   return 0;
 
 
@@ -76,7 +76,6 @@ struct message_t *network_send_receive(struct rtree_t * rtree,
     close(socket);
     return NULL;
   }
-  printf("\nMensagem enviada\n\nA espera da resposta do servidor...\n");
   //mensagem recebida
   struct message_t * rmsg = rcv_msg_socket(socket);
   if (msg == NULL){
@@ -84,8 +83,6 @@ struct message_t *network_send_receive(struct rtree_t * rtree,
     close(socket);
     return NULL;
   }
-
-  printf("\nMensagem recebida\n");
   return rmsg;
 
 

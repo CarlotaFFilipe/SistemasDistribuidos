@@ -48,7 +48,6 @@ struct message_t * rcv_msg_socket (int socket){
     printf("Falta de memoria\n");
     return NULL;
   }
-  //le o tamanho da mensagem
   rd = read_nbytes(socket, buf, sizeof(uint32_t));
   if (rd == 0){ //ligacao fechada
     free(buf);
@@ -122,10 +121,13 @@ int write_nbytes (int socket, void * buf, int length){
 int put_request_message(struct message_t * msg, struct entry_t * entry){
   msg->opcode = 40;
   msg->c_type = 30;
-  msg->data_size = entry->value->datasize;
-  //msg->value = malloc(sizeof(char* ));
-  //Transformar entry para string e huardar tamanho em data_size
-  msg->data_size = entry_to_buffer(entry,&msg->data);
+  //Transformar entry para string e guardar tamanho em data_size
+  //usar o serialization
+  //msg->data_size = entry_to_buffer(entry,&msg->data);
+  msg->data = (char *) malloc(sizeof(struct entry_t));
+  sprintf(msg->data,"%s %d %s",entry->key,entry->value->datasize,entry->value->data);
+  msg->data_size=strlen(msg->data);
+
   msg->n_keys = 1;
 
   return 0;
@@ -148,9 +150,14 @@ int put_response_message(struct message_t * msg){
 int get_request_message(struct message_t * msg, char * key){
   msg->opcode = 30;
   msg->c_type = 10;
+  msg->data_size =  strlen(key);
   msg->n_keys = 1;
-  msg->keys = strdup(key);
-  if (msg->keys == NULL){
+  msg->data = strdup(key);
+  //Copiar key para data
+  /*msg->data = (char *) malloc(sizeof(char) * msg->data_size);
+  sprintf(msg->data,"%s",key);
+*/
+  if (msg->data == NULL){
     printf("Falta de memoria\n");
     return -1;
   }
@@ -160,6 +167,14 @@ int get_request_message(struct message_t * msg, char * key){
 int get_response_message(struct message_t * msg, struct data_t * res){
   msg->opcode += 1;
   msg->c_type = 20;
+  msg->data_size= res->datasize;
+ //msg->data= res->data;
+
+
+
+  msg->data= malloc (msg->data_size);
+  sprintf(msg->data,"%s",res->data);
+ 
 
   return 0;
 }

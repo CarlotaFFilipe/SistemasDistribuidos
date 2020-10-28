@@ -27,6 +27,8 @@
 #include <stdbool.h>
 #include <signal.h>
 
+#define MAX_MSG 2048
+
 int test_input(int argc){
   if(argc != 2){
     printf("tree_client <ip servidor>:<porta servidor>\n");
@@ -59,12 +61,12 @@ int main(int argc, char **argv){
 
   //ver quais as acoes
   
-  corrente = (char*)malloc(sizeof(char*));
-  terminal = (char*)malloc(sizeof(char*));
+  corrente = malloc(MAX_MSG);
+  terminal = malloc(MAX_MSG*sizeof(char));
 
   while(!ctrl_z){
     printf("==>");
-    fgets(terminal, sizeof(terminal), stdin);
+    fgets(terminal, MAX_MSG, stdin);
     terminal[strlen(terminal) -1] = '\0';
 
     tamanho = strlen(terminal);
@@ -78,7 +80,7 @@ int main(int argc, char **argv){
       continue;
     }
     else if(strcmp(corrente,"size") == 0){
-      printf("Entries na tree: %d\n",rtree_size(rt));
+      printf("Numero de entries na tree: %d\n",rtree_size(rt));
       continue;
     }
     else if(strcmp(corrente,"height") == 0){
@@ -88,11 +90,14 @@ int main(int argc, char **argv){
     else if(strcmp(corrente,"del") == 0){
       corrente = strtok(NULL, " ");
       rtree_del(rt,corrente);
+      printf("A chave foi %s eliminada.\n", corrente);
       continue;
     }
     else if(strcmp(corrente,"get") == 0){
       corrente = strtok(NULL," ");
-      rtree_get(rt,corrente);
+      struct data_t *data = rtree_get(rt,corrente);
+      printf("O value de %s eh %s.\n", corrente,data->data);
+//data_destroy?????
       continue;
     }
     else if(strcmp(corrente,"put") == 0){
@@ -102,16 +107,17 @@ int main(int argc, char **argv){
       struct data_t *data = data_create2(strlen(corrente),corrente);
       struct entry_t *entry = entry_create(key,data);
       rtree_put(rt,entry);
-      data_destroy(data);//destroy
-      entry_destroy(entry);//destroy
+      //entry_destroy(entry);//destroy
+      printf("A chave foi posta com sucesso\n");
       continue;
     }
     else if(strcmp(corrente,"getkeys") == 0){
-      rtree_get_keys(rt);
+      char *keys=rtree_get_keys(rt);
+      printf("Existem estas keys na tabela: %s\n", keys);
       continue;
     }
     else{
-      printf("Comando inválido. Exemplo de comandos:\n size \n del <key>\n get <key> \n put <key> <data> \n getkeys\n quit\n");
+      printf("Comando inválido. Exemplo de comandos:\n size\n height \n del <key>\n get <key> \n put <key> <data> \n getkeys\n quit\n");
       continue;
     }
   }
