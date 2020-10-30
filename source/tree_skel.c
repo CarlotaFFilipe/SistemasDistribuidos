@@ -51,11 +51,11 @@ int invoke(struct message_t *msg){
 
 
     }else if(msg->opcode== 20){
-        if(tree_del(tree, msg->keys)==-1)
+        if(tree_del(tree, msg->data)==-1)
             msg->opcode = 99;
         else
             msg->opcode +=1;
-        del_request_message(msg, msg->keys);
+        del_request_message(msg, msg->data);
         return 0;
 
 
@@ -71,30 +71,32 @@ int invoke(struct message_t *msg){
             data_destroy(data);
         }
         return 0;
+
     }else if(msg->opcode == 40){
         //com o serialization
         //struct entry_t *entry = buffer_to_entry(msg->data, msg->data_size);
-
+//entry_create()
         struct entry_t *entry = malloc(sizeof(struct entry_t));
         char *corrente;
         corrente  = strtok(msg->data," ");
         entry->key = corrente;
-        struct data_t *data = malloc(sizeof(struct data_t));
         corrente = strtok(NULL, " ");
-        data->datasize = atoi(corrente);
+        struct data_t *data = data_create(atoi(corrente));
         corrente = strtok(NULL, " ");
         data->data =corrente;
-         entry->value = data;
+        entry->value = data;
+
+
         int put = tree_put(tree, entry->key, entry->value);
-////data_destroy(data);
-//entry_destoy(entry);
         if(put == -1){
             msg->opcode = 99;
         }else{
             msg->opcode += 1;
         }
         put_response_message(msg);
-        //entry_destroy(entry);
+    //entry_destroy(entry);
+    free(data);
+    free(entry);
         return 0;
 
 
@@ -105,10 +107,12 @@ int invoke(struct message_t *msg){
             return -1;
         get_keys_response_message(msg, keys, size);
         tree_free_keys(keys);
+printf("\n\n   %s\n\n", msg->data);
         return 0;
 
     }else if(msg->opcode == 60){//height
-        int tamanho= tree_height(tree);
+        int tamanho = tree_height(tree);
+printf("\n\n   %d\n\n", tamanho);
         height_response_message(tree, tamanho);
         return 0;
 

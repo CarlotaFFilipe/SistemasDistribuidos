@@ -107,7 +107,8 @@ int main(int argc, char **argv){
       struct data_t *data = data_create2(strlen(corrente),corrente);
       struct entry_t *entry = entry_create(key,data);
       rtree_put(rt,entry);
-      //entry_destroy(entry);//destroy
+      //free(entry->key);
+      free(entry);//destroy
       printf("A chave foi posta com sucesso\n");
       continue;
     }

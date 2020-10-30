@@ -1,5 +1,8 @@
 
-
+// Grupo21
+// Carlota Filipe n51027
+// Leonor Candeias n51057
+// Mafalda Paço n53507
 
 #include "sdmessage.pb-c.h"
 #include "message-private.h"
@@ -7,9 +10,6 @@
 #include "inet.h"
 #include "entry.h"
 #include "serialization.h"
-
-char* arrayString_to_string ( char ** array, int n_keys, int length );
-
 
 
 int snd_msg_socket (struct message_t * msg, int socket){
@@ -152,11 +152,11 @@ int get_request_message(struct message_t * msg, char * key){
   msg->c_type = 10;
   msg->data_size =  strlen(key);
   msg->n_keys = 1;
-  msg->data = strdup(key);
+  //msg->data = strdup(key);
   //Copiar key para data
-  /*msg->data = (char *) malloc(sizeof(char) * msg->data_size);
+  msg->data = (char *) malloc(sizeof(char) * msg->data_size);
   sprintf(msg->data,"%s",key);
-*/
+
   if (msg->data == NULL){
     printf("Falta de memoria\n");
     return -1;
@@ -167,14 +167,15 @@ int get_request_message(struct message_t * msg, char * key){
 int get_response_message(struct message_t * msg, struct data_t * res){
   msg->opcode += 1;
   msg->c_type = 20;
-  msg->data_size= res->datasize;
- //msg->data= res->data;
-
-
-
-  msg->data= malloc (msg->data_size);
-  sprintf(msg->data,"%s",res->data);
  
+ if (res != NULL){
+    msg->data_size = res->datasize;
+    msg->data = malloc(res->datasize);
+    if (msg->data == NULL)
+      return -1;
+    memcpy(msg->data, res->data, res->datasize);
+  }
+  msg->n_keys = 0;
 
   return 0;
 }
@@ -189,7 +190,7 @@ int del_request_message(struct message_t * msg, char * key){
   msg->opcode = 20;
   msg->c_type = 10;
   msg->n_keys = 1;
-  msg->keys = strdup(key);
+  msg->data = strdup(key);
   if (msg->keys == NULL){
     printf("Falta de memoria\n");
     return -1;
@@ -241,38 +242,40 @@ void height_response_message(struct message_t * msg, int height){
 void get_keys_request_message(struct message_t * msg){
   msg->opcode = 50;
   msg->c_type = 60;
+  msg->data_size= 0;
+  msg->data = NULL;
 }
+
+
+int length_all_keys(char** array){
+	//Descobrir size do array
+  int length=0, i = 0;
+ 
+  while(array[i] != NULL){
+    length+= strlen(array[i] +1);
+    i++;
+  }
+  return length;
+}
+
 
 int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys){
-  msg->opcode += 1;
+  int offset = 0;
+	msg->opcode += 1;
   msg->c_type = 40;
   msg->n_keys = n_keys;
-  if(n_keys>0){
-    int sum = 0;
-    for (int i = 0; i < n_keys; i++)
-      sum += (strlen(keys[i]) + 1);
-    msg->data= arrayString_to_string(keys, n_keys, sum);
-  }
+  msg->data = malloc(length_all_keys(keys)+1);
+  printf("POISSSSSSSSSSSSSSSSSSS1\n\n\n\n\n\n\n\n");
 
-//meter no final '\0'
-  //memcpy(msg->data + sum, "\0", 1);
+	for (int i = 0; i < n_keys; i++){
+   	memcpy(msg->data + offset, keys[i], strlen(keys[i]));     offset += strlen(keys[i]);
+   	memcpy(msg->data + offset, " ", 1);                       offset +=1;
+  }
+  memcpy(msg->keys + offset, "\0", 1);                       offset +=1;
+
+  printf("POISSSSSSSSSSSSSSSSSSS2\n");
   return 0;
 }
-
-char* arrayString_to_string ( char ** array, int n_keys, int length ) {
-  //rever o tamanho
-  char * string = malloc(length);
-  //char * string = malloc(sizeof(char *));
-  for (int i = 0; i < n_keys; i++) {
-    strcat(string,array[i]); //memcpy??
-    strcat(string, " ");
-  }
-  return string;
-}
-
-
-
-
 
 
 

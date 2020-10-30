@@ -139,7 +139,7 @@ int rtree_del(struct rtree_t *rtree, char *key){
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
-  free(msg.keys);
+  free(msg.data);
   if (rmsg != NULL){
     if (rmsg->opcode == 21){//existe resposta do servidor
       res = 0;
@@ -173,23 +173,25 @@ int rtree_size(struct rtree_t *rtree){
 
 /* Função que devolve a altura da árvore.
  */
-int rtree_height(struct rtree_t *tree){
+int rtree_height(struct rtree_t *rtree){
   int res = -1;
   struct message_t msg, * rmsg;
   message_t__init(&msg);
 
-  if(tree == NULL)
+  if(rtree == NULL)
     return res;
 
   height_request_message(&msg);
+
+  rmsg = network_send_receive(rtree, &msg);
   
-  rmsg = network_send_receive(tree, &msg);
   if (rmsg != NULL){
-    if (rmsg->opcode == 61){//existe resposta do servidor
+    //if (rmsg->opcode == 61){//existe resposta do servidor
       res = rmsg->result;
-    }
+    //}
     message_t__free_unpacked(rmsg, NULL);
   }
+  
   return res;
 }
 
@@ -197,6 +199,19 @@ int rtree_height(struct rtree_t *tree){
  * colocando um último elemento a NULL.
  */
 char **rtree_get_keys(struct rtree_t *rtree){
+  char ** res = NULL;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
+  get_keys_request_message(&msg);
+  rmsg = network_send_receive(rtree, &msg);
+	if (rmsg != NULL){
+    if (rmsg->opcode == 51){//existe resposta do servidor
+      res = rmsg->data;
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+printf("\n\n dentro do client_stub  %s\n\n", rmsg->data);
+return rmsg->data;
 
 }
 

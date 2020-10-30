@@ -79,7 +79,7 @@ run:
 #	valgrind --leak-check=yes ./binary/test_tree
 #	./binary/test_serialization
 #	valgrind --leak-check=yes ./binary/test_serialization
-##	./binary/tree_server 12345 2
+##	./binary/tree_server 12345
 ##	./binary/tree_client 127.0.0.1:12345
 clean:
 	rm $(OBJ)*.o
