@@ -1,7 +1,7 @@
-# Grupo21
-# Carlota Filipe n51027
-# Leonor Candeias n51057
-# Mafalda Paço n51
+## Grupo21
+## Carlota Filipe n51027
+## Leonor Candeias n51057
+## Mafalda Paço n53507
 
 CC=gcc
 INCLUDE = include/
@@ -83,6 +83,10 @@ run:
 ##	valgrind --leak-check=yes ./binary/tree-server 12345
 ##	./binary/tree-client 127.0.0.1:12345
 ##	valgrind --leak-check=yes ./binary/tree-client 127.0.0.1:12345
+
+
+
 clean:
 	rm $(OBJ)*.o
 	rm binary/*
+	rm lib/*

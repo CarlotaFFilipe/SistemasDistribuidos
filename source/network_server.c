@@ -6,9 +6,6 @@
 
 
 
-
-//TODO: falta a parte dos sinais
-
 #include "tree_skel.h"
 #include "network_server.h"
 #include "message-private.h"

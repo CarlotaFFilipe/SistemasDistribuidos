@@ -1,3 +1,8 @@
+// Grupo21
+// Carlota Filipe n51027
+// Leonor Candeias n51057
+// Mafalda Paço n53507
+
 syntax = "proto3";
 message message_t
  {
@@ -31,8 +36,8 @@ message message_t
 
         sint32 n_keys = 5;
 
-        string keys = 6;
+        string key = 6;
 
-        sint32 result = 7;
+        sint32 res = 7;
 
 };

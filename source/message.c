@@ -1,4 +1,3 @@
-
 // Grupo21
 // Carlota Filipe n51027
 // Leonor Candeias n51057
@@ -129,7 +128,7 @@ int put_request_message(struct message_t * msg, struct entry_t * entry){
   memcpy(msg->data, entry->value->data, msg->data_size);
   msg->data[msg->data_size]='\0';
 
-  msg->keys = strdup(entry->key);
+  msg->key = strdup(entry->key);
   msg->n_keys = 1;
   return 0;
 }
@@ -183,8 +182,8 @@ int key_not_found_response_message(struct message_t * msg){
 	  msg->c_type = 60;
 		msg->data_size=0;
   	msg->data=NULL;
-		msg->keys = NULL;
-		msg->result = 0;
+		msg->key = NULL;
+		msg->res = 0;
   msg->n_keys = 0;
 }
 
@@ -200,7 +199,7 @@ int del_request_message(struct message_t * msg, char * key){
   msg->c_type = 10;
   msg->n_keys = 1;
   msg->data = strdup(key);
-  if (msg->keys == NULL){
+  if (msg->data == NULL){
     printf("Falta de memoria\n");
     return -1;
   }
@@ -229,7 +228,7 @@ void size_request_message(struct message_t * msg){
 void size_response_message(struct message_t * msg, int size){
   msg->opcode += 1;
   msg->c_type = 50;
-  msg->result = size;
+  msg->res = size;
 }
 
 
@@ -245,7 +244,7 @@ void height_request_message(struct message_t * msg){
 void height_response_message(struct message_t * msg, int height){
   msg->opcode += 1;
   msg->c_type = 50;
-  msg->result = height;
+  msg->res = height;
 }
 
 

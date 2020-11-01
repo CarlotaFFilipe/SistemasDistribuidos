@@ -5,11 +5,11 @@
 
 #ifndef _CLIENT_STUB_PRIVATE_H
 #define _CLIENT_STUB_PRIVATE_H
-//#include "inet.h"
+#include "inet.h"
 #include "client_stub.h"
 
 struct rtree_t{
-	//struct sockaddr_in server;
+	struct sockaddr_in server;
 	char *hostname;
 	char *port;
     int socket;

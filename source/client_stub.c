@@ -79,7 +79,7 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
-  free(msg.keys);
+  free(msg.key);
   free(msg.data);
   //entry_destoy(entry);
   //free(entry->value->data);
@@ -112,22 +112,17 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key){
   //allocado previamente em put_request_message
   free(msg.data);
   if (rmsg != NULL){
-		if (rmsg->opcode == 31)
-    {
-      if (rmsg->data_size >0)
-			{//existe resposta do servidor
+		if (rmsg->opcode == 31){
+      if (rmsg->data_size >0){//existe resposta do servidor
         res = data_create(rmsg->data_size +1);
         if (res != NULL)
         	memcpy(res->data, rmsg->data, res->datasize);
         //res->data[res->datasize] = '\0';
-      }
-      else
-      {//size==0
+      }else{//size==0
 				res = NULL;
 			}
     }
-    else
-    {//opcode == 99
+    else{//opcode == 99
 			res = NULL;
     }
     message_t__free_unpacked(rmsg, NULL);
@@ -188,7 +183,7 @@ int rtree_size(struct rtree_t *rtree){
   rmsg = network_send_receive(rtree, &msg);
   if (rmsg != NULL){
     if (rmsg->opcode == 11){//existe resposta do servidor
-      res = rmsg->result;
+      res = rmsg->res;
     }
     message_t__free_unpacked(rmsg, NULL);
   }
@@ -211,7 +206,7 @@ int rtree_height(struct rtree_t *rtree){
   
   if (rmsg != NULL){
     if (rmsg->opcode == 61){//existe resposta do servidor
-      res = rmsg->result;
+      res = rmsg->res;
     }
     message_t__free_unpacked(rmsg, NULL);
   }

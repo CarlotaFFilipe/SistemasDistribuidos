@@ -72,8 +72,7 @@ int invoke(struct message_t *msg){
         else
             msg->opcode +=1;
         del_response_message(msg, msg->data);
-printf("opcode: %d, ctype: %d, data_size: %d, data: %s, n_keys: %d, result: %d, keys: %s\n",msg->opcode,msg->c_type,msg->data_size,msg->data,msg->n_keys,msg->result,msg->keys);
-        return 0;
+				return 0;
 
 
 
@@ -98,7 +97,6 @@ printf("opcode: %d, ctype: %d, data_size: %d, data: %s, n_keys: %d, result: %d, 
              return -1;
         
         data_destroy(data);
-printf("opcode: %d, ctype: %d, data_size: %d, data: %s, n_keys: %d, result: %d, keys: %s\n",msg->opcode,msg->c_type,msg->data_size,msg->data,msg->n_keys,msg->result,msg->keys);
         return 0;
 
 
@@ -118,7 +116,7 @@ printf("opcode: %d, ctype: %d, data_size: %d, data: %s, n_keys: %d, result: %d, 
         //struct entry_t *entry = buffer_to_entry(msg->data, msg->data_size);
         struct data_t *data = data_create2(msg->data_size, msg->data);
 
-        int put = tree_put(tree, msg->keys, data);
+        int put = tree_put(tree, msg->key, data);
         if(put == -1){
             msg->opcode = 99;
         }else{

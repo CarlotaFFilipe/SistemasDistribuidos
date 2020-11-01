@@ -26,27 +26,26 @@
  * - Retornar 0 (OK) ou -1 (erro).
  */
 int network_connect(struct rtree_t *rtree){
-  struct sockaddr_in server;
     //criar socket TCP
   if ((rtree->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    free(rtree->hostname);
-    //free(rtree->port); //porto eh int
+    //free(rtree->hostname);
+    //free(rtree->port);
     perror("Erro ao criar socket TCP");
     return -1;
   }
   //Preenche estrutura server para estabelecer conexão dando o endereco e o porto
-  server.sin_family = AF_INET;
-  server.sin_port = htons(atoi(rtree->port));
-  if (inet_pton(AF_INET, rtree->hostname, &server.sin_addr) < 1) {
-    free(rtree->hostname);
+  rtree->server.sin_family = AF_INET;
+  rtree->server.sin_port = htons(atoi(rtree->port));
+  if (inet_pton(AF_INET, rtree->hostname, &rtree->server.sin_addr) < 1) {
+    //free(rtree->hostname);
     //free(rtree->port);
     printf("Erro ao converter IP\n");
     close(rtree->socket);
     return -1;
   }
   // Estabelece conexão com o servidor definido em server
-  if (connect(rtree->socket,(struct sockaddr *)&server, sizeof(server)) < 0) {
-    free(rtree->hostname);
+  if (connect(rtree->socket,(struct sockaddr *)&rtree->server, sizeof(rtree->server)) < 0) {
+    //free(rtree->hostname);
     //free(rtree->port);
     perror("Erro ao conectar-se ao servidor");
     close(rtree->socket);
