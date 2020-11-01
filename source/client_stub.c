@@ -79,8 +79,11 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
-  //free(msg.keys);
+  free(msg.keys);
   free(msg.data);
+  //entry_destoy(entry);
+  //free(entry->value->data);
+  free(entry);
   if (rmsg != NULL){
     if (rmsg->opcode == 41){//existe resposta do servidor
       res = 0;
@@ -94,7 +97,7 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
  * Em caso de erro, devolve NULL.
  */
 struct data_t *rtree_get(struct rtree_t *rtree, char *key){
-  struct data_t *res = NULL;
+ struct data_t *res = NULL;
   struct message_t msg, * rmsg;
   message_t__init(&msg);
   
@@ -107,19 +110,31 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key){
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
+
   if (rmsg != NULL){
-    if (rmsg->opcode == 31 && rmsg->data_size >0){//existe resposta do servidor
-      res = data_create(rmsg->data_size);
-      if (res == NULL){
-        return NULL;
+		if (rmsg->opcode == 31)
+    {
+      if (rmsg->data_size >0)
+			{//existe resposta do servidor
+        res = data_create(rmsg->data_size +1);
+        if (res == NULL){
+          return NULL;
+        }
+        memcpy(res->data, rmsg->data, res->datasize);
+        //res->data[res->datasize] = '\0';
       }
-      //memcpy(res->data, rmsg->data, res->datasize);
-      res->data = rmsg->data;
-    }
-    //message_t__free_unpacked(rmsg, NULL);
+      else{//size==0
+				return NULL;
+			}
+    }else//opcode == 99
+			return NULL;
+    message_t__free_unpacked(rmsg, NULL);
   }
   return res;
 }
+
+
+
 
 /* Função para remover um elemento da árvore. Vai libertar 
  * toda a memoria alocada na respetiva operação rtree_put().
@@ -141,13 +156,20 @@ int rtree_del(struct rtree_t *rtree, char *key){
   //allocado previamente em put_request_message
   free(msg.data);
   if (rmsg != NULL){
-    if (rmsg->opcode == 21){//existe resposta do servidor
+		if(rmsg->opcode == 99){
+			printf("Nao existe essa key para eliminar.\n");
+		}
+    else if (rmsg->opcode == 21){//existe resposta do servidor
+			printf("A chave foi %s eliminada.\n", key);
       res = 0;
     }
     message_t__free_unpacked(rmsg, NULL);
   }
   return res;
 }
+
+
+
 
 /* Devolve o número de elementos contidos na árvore.
  */
@@ -186,14 +208,21 @@ int rtree_height(struct rtree_t *rtree){
   rmsg = network_send_receive(rtree, &msg);
   
   if (rmsg != NULL){
-    //if (rmsg->opcode == 61){//existe resposta do servidor
+    if (rmsg->opcode == 61){//existe resposta do servidor
       res = rmsg->result;
-    //}
+    }
     message_t__free_unpacked(rmsg, NULL);
   }
   
   return res;
 }
+
+
+
+
+
+
+
 
 /* Devolve um array de char* com a cópia de todas as keys da árvore,
  * colocando um último elemento a NULL.
@@ -206,14 +235,19 @@ char **rtree_get_keys(struct rtree_t *rtree){
   rmsg = network_send_receive(rtree, &msg);
 	if (rmsg != NULL){
     if (rmsg->opcode == 51){//existe resposta do servidor
-      res = rmsg->data;
+      res= malloc(rmsg->data_size);
+      strcpy(res, rmsg->data);
     }
     message_t__free_unpacked(rmsg, NULL);
+		
   }
-printf("\n\n dentro do client_stub  %s\n\n", rmsg->data);
-return rmsg->data;
+	return res;
 
 }
+
+
+
+
 
 /* Liberta a memória alocada por rtree_get_keys().
  */

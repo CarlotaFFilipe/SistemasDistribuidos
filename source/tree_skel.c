@@ -45,78 +45,130 @@ int invoke(struct message_t *msg){
     if(tree == NULL || msg == NULL)
         return -1;
 
+
+
     if(msg->opcode == 10){
+//A mensagem foi composta incorretamente
+        if(msg->c_type!=60){
+						printf("A mensagem size foi composta incorretamente\n");
+					  return -1;
+				}
         size_response_message(msg, tree_size(tree));
         return 0;
 
 
+
+
+
+
     }else if(msg->opcode== 20){
+//A mensagem foi composta incorretamente
+        if(msg->c_type!=10 || msg->n_keys != 1){
+						printf("A mensagem del foi composta incorretamente\n");
+					  return -1;
+				}
         if(tree_del(tree, msg->data)==-1)
             msg->opcode = 99;
         else
             msg->opcode +=1;
-        del_request_message(msg, msg->data);
+        del_response_message(msg, msg->data);
+printf("opcode: %d, ctype: %d, data_size: %d, data: %s, n_keys: %d, result: %d, keys: %s\n",msg->opcode,msg->c_type,msg->data_size,msg->data,msg->n_keys,msg->result,msg->keys);
         return 0;
+
+
+
+
+
+
 
 
     }else if(msg->opcode == 30){
-        struct data_t *data= tree_get(tree, msg->data);
+//A mensagem foi composta incorretamente
+        if(msg->c_type!=10 || msg->n_keys != 1){
+						printf("A mensagem get foi composta incorretamente\n");
+					  return -1;
+				}
+        struct data_t *data=tree_get(tree, msg->data);
         free(msg->data);
-        if(data == NULL){
-            error_response_message(msg);
-        }else{
-            if(get_response_message(msg, data)==-1)
-                return -1;
+				if(data ==NULL){
+						key_not_found_response_message(msg);
+
+        }else
+					if(get_response_message(msg, data)==-1)
+             return -1;
         
-            data_destroy(data);
-        }
+        data_destroy(data);
+printf("opcode: %d, ctype: %d, data_size: %d, data: %s, n_keys: %d, result: %d, keys: %s\n",msg->opcode,msg->c_type,msg->data_size,msg->data,msg->n_keys,msg->result,msg->keys);
         return 0;
 
+
+
+
+
+
+
+
     }else if(msg->opcode == 40){
+//A mensagem foi composta incorretamente
+        if(msg->c_type!=30 || msg->n_keys != 1){
+						printf("A mensagem put foi composta incorretamente\n");
+					  return -1;
+				}
         //com o serialization
         //struct entry_t *entry = buffer_to_entry(msg->data, msg->data_size);
-//entry_create()
-        struct entry_t *entry = malloc(sizeof(struct entry_t));
-        char *corrente;
-        corrente  = strtok(msg->data," ");
-        entry->key = corrente;
-        corrente = strtok(NULL, " ");
-        struct data_t *data = data_create(atoi(corrente));
-        corrente = strtok(NULL, " ");
-        data->data =corrente;
-        entry->value = data;
+        struct data_t *data = data_create2(msg->data_size, msg->data);
 
-
-        int put = tree_put(tree, entry->key, entry->value);
+        int put = tree_put(tree, msg->keys, data);
         if(put == -1){
             msg->opcode = 99;
         }else{
             msg->opcode += 1;
         }
         put_response_message(msg);
-    //entry_destroy(entry);
-    free(data);
-    free(entry);
+    		data_destroy(data);
         return 0;
 
 
+
+
+
+
+
+
+
     }else if(msg->opcode == 50){ //getkeys
+//A mensagem foi composta incorretamente
+        if(msg->c_type!=60){
+						printf("A mensagem getkeys foi composta incorretamente\n");
+					  return -1;
+				}
         int size = tree_size(tree);
         char** keys = tree_get_keys(tree);
         if(keys == NULL)
             return -1;
         get_keys_response_message(msg, keys, size);
         tree_free_keys(keys);
-printf("\n\n   %s\n\n", msg->data);
         return 0;
 
+
+
+
+
+
+
+
     }else if(msg->opcode == 60){//height
+//A mensagem foi composta incorretamente
+        if(msg->c_type!=60){
+						printf("A mensagem height foi composta incorretamente\n");
+					  return -1;
+				}
         int tamanho = tree_height(tree);
-printf("\n\n   %d\n\n", tamanho);
         height_response_message(tree, tamanho);
         return 0;
 
     }else{//opcode 99, o servidor nao deve receber este opcode
+				error_response_message(msg);
         return -1;
     }
 

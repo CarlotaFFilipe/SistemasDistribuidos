@@ -1,0 +1,9 @@
+
+FASE 1:
+
+
+FASE 2:
+		quando o client quer sair, o servidor tambem termina;
+    Operacao get, quando é chamada pela primeira vez imprime lixo no final;
+		A operacao height, quando eh chamada ocorre problemas no message_t__get_packed_size;
+		

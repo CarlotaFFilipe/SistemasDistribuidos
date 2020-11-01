@@ -16,6 +16,18 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <signal.h>
+
+
+
+//handler para os sinais SIGINT e SIGQUIT
+void quit_handler (int sig){
+  tree_skel_destroy();
+  network_server_close();
+}
+
+
+
 
 int testInput(int argc){
   if (argc != 2){
@@ -28,6 +40,13 @@ int testInput(int argc){
 
 
 int main(int argc, char **argv){
+
+	signal(SIGINT, quit_handler);
+  signal(SIGQUIT, quit_handler);
+  //Evita crash devido ao fecho da ligação
+  signal(SIGPIPE, SIG_IGN);
+
+
    // Verifica se foi passado algum argumento
   if (testInput(argc) == -1)
     return -1;

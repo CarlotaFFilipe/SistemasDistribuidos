@@ -23,6 +23,7 @@ message message_t
                 CT_NONE   = 60;
         }
         C_type c_type = 2;
+				
 
         sint32 data_size = 3;
 

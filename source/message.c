@@ -119,17 +119,18 @@ int write_nbytes (int socket, void * buf, int length){
 *return 0 se a operacao corre bem e -1 caso contrario
 */
 int put_request_message(struct message_t * msg, struct entry_t * entry){
+  int offset=0;
   msg->opcode = 40;
   msg->c_type = 30;
-  //Transformar entry para string e guardar tamanho em data_size
-  //usar o serialization
-  //msg->data_size = entry_to_buffer(entry,&msg->data);
-  msg->data = (char *) malloc(sizeof(struct entry_t));
-  sprintf(msg->data,"%s %d %s",entry->key,entry->value->datasize,entry->value->data);
-  msg->data_size=strlen(msg->data);
+  //msg->data_size = entry_to_buffer(entry, &msg->data);
 
+  msg->data_size = entry->value->datasize;
+  msg->data= malloc (msg->data_size+1);
+  memcpy(msg->data, entry->value->data, msg->data_size);
+  msg->data[msg->data_size]='\0';
+
+  msg->keys = strdup(entry->key);
   msg->n_keys = 1;
-
   return 0;
 }
 
@@ -142,6 +143,8 @@ int put_response_message(struct message_t * msg){
 
 
 
+
+
 /*preenche a mensagem (ver protobuf) com os parametros do put
 *assim, o opcode eh 30, c_type eh 10, meter os dados do data na mensagem
 *so enviamos 1 key
@@ -150,35 +153,41 @@ int put_response_message(struct message_t * msg){
 int get_request_message(struct message_t * msg, char * key){
   msg->opcode = 30;
   msg->c_type = 10;
-  msg->data_size =  strlen(key);
   msg->n_keys = 1;
-  //msg->data = strdup(key);
-  //Copiar key para data
-  msg->data = (char *) malloc(sizeof(char) * msg->data_size);
-  sprintf(msg->data,"%s",key);
-
+  msg->data = strdup(key);
   if (msg->data == NULL){
     printf("Falta de memoria\n");
     return -1;
   }
-  return 0;
 }
 
 int get_response_message(struct message_t * msg, struct data_t * res){
   msg->opcode += 1;
-  msg->c_type = 20;
- 
- if (res != NULL){
+
+    msg->c_type = 20;
     msg->data_size = res->datasize;
-    msg->data = malloc(res->datasize);
+    msg->data = malloc(res->datasize +1);
     if (msg->data == NULL)
       return -1;
     memcpy(msg->data, res->data, res->datasize);
-  }
+		msg->data[msg->data_size] = '\0';
+  
   msg->n_keys = 0;
 
   return 0;
 }
+
+
+int key_not_found_response_message(struct message_t * msg){
+	msg->opcode += 1;
+	  msg->c_type = 60;
+		msg->data_size=0;
+  	msg->data=NULL;
+		msg->keys = NULL;
+		msg->result = 0;
+  msg->n_keys = 0;
+}
+
 
 
 /*preenche a mensagem (ver protobuf) com os parametros do put
@@ -201,10 +210,13 @@ int del_request_message(struct message_t * msg, char * key){
 int del_response_message(struct message_t * msg, char * key){
   msg->c_type= 60;
   msg->data_size = 0;
+  free(msg->data);
   msg->data = NULL;
   msg->n_keys = 0;
   return 0;
 }
+
+
 
 
 /*preenche a mensagem (ver protobuf) com os parametros do put
@@ -221,6 +233,8 @@ void size_response_message(struct message_t * msg, int size){
 }
 
 
+
+
 /*preenche a mensagem (ver protobuf) com os parametros do put
 *assim, o opcode eh 60, c_type eh 60 (CT_NONE)
 */
@@ -233,6 +247,8 @@ void height_response_message(struct message_t * msg, int height){
   msg->c_type = 50;
   msg->result = height;
 }
+
+
 
 
 
@@ -252,7 +268,7 @@ int length_all_keys(char** array){
   int length=0, i = 0;
  
   while(array[i] != NULL){
-    length+= strlen(array[i] +1);
+    length+= strlen(array[i])+1;
     i++;
   }
   return length;
@@ -265,15 +281,14 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys){
   msg->c_type = 40;
   msg->n_keys = n_keys;
   msg->data = malloc(length_all_keys(keys)+1);
-  printf("POISSSSSSSSSSSSSSSSSSS1\n\n\n\n\n\n\n\n");
 
 	for (int i = 0; i < n_keys; i++){
    	memcpy(msg->data + offset, keys[i], strlen(keys[i]));     offset += strlen(keys[i]);
    	memcpy(msg->data + offset, " ", 1);                       offset +=1;
   }
-  memcpy(msg->keys + offset, "\0", 1);                       offset +=1;
+  memcpy(msg->data + offset, "\0", 1);                       offset +=1;
+  msg->data_size= offset;
 
-  printf("POISSSSSSSSSSSSSSSSSSS2\n");
   return 0;
 }
 

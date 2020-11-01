@@ -12,7 +12,7 @@ LIB = lib/
 FLAG = gcc -g -w -Wall -I include/ -I lib/ -c
 LINKFLAGS= ld -r
 
-all: proto data.o entry.o tree.o serialization.o message.o network_client.o client_stub.o tree_cliente.o network_server.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree_client tree_server
+all: proto data.o entry.o tree.o serialization.o message.o network_client.o client_stub.o tree_cliente.o network_server.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree-client tree-server
 
 proto: 
 	protoc --c_out=./lib/ sdmessage.proto
@@ -59,11 +59,11 @@ sdmessage.pb-c.o: $(LIB)sdmessage.pb-c.h
 client-lib.o: 
 	$(LINKFLAGS) $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)client_stub.o $(OBJ)network_client.o $(OBJ)sdmessage.pb-c.o -o $(OBJ)client-lib.o 
 
-tree_client: $(OBJ)client-lib.o $(OBJ)tree_client.o
-	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_client
+tree-client: $(OBJ)client-lib.o $(OBJ)tree_client.o
+	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree-client
 #message.o
-tree_server:
-	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree_server 
+tree-server:
+	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree-server 
 
 
 
@@ -79,8 +79,10 @@ run:
 #	valgrind --leak-check=yes ./binary/test_tree
 #	./binary/test_serialization
 #	valgrind --leak-check=yes ./binary/test_serialization
-##	./binary/tree_server 12345
-##	./binary/tree_client 127.0.0.1:12345
+##	./binary/tree-server 12345
+##	valgrind --leak-check=yes ./binary/tree-server 12345
+##	./binary/tree-client 127.0.0.1:12345
+##	valgrind --leak-check=yes ./binary/tree-client 127.0.0.1:12345
 clean:
 	rm $(OBJ)*.o
 	rm binary/*

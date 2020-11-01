@@ -14,11 +14,14 @@
  * necessária, especificada pelo parâmetro size 
  */
 struct data_t *data_create(int size){
-  if(size <= 0)
+  if(size < 0)
     return NULL;
   struct data_t *d1= (struct data_t*) malloc(size * sizeof(struct data_t));
   d1->datasize = size;
-  d1->data = malloc(size * sizeof(d1->data));
+  if(size == 0)
+		d1->data=NULL;
+  else
+    d1->data = malloc(size * sizeof(d1->data));
   return d1;
 }
 
@@ -26,11 +29,14 @@ struct data_t *data_create(int size){
  * o parâmetro data.
  */
 struct data_t *data_create2(int size, void *data){
-  if(data == NULL || size <= 0)
+  if(data == NULL || size < 0)
     return NULL;
   struct data_t *d2 = (struct data_t*) malloc(size * sizeof(struct data_t));
   d2->datasize = size;
-  d2->data = data; //deveriamos fazer memcpy?
+  if(size = 0)
+		d2->data=NULL;
+  else
+  	d2->data = data;
   return d2;
 }
 

@@ -96,6 +96,7 @@ int network_main_loop(int listening_socket){
     struct message_t *msg = network_receive(socket_cliente);
     if(msg == NULL){
       close(socket_cliente);
+			network_server_close();
       printf("Erro ao receber mensagem\n");
       return -1;
     }else{
@@ -106,7 +107,8 @@ int network_main_loop(int listening_socket){
       }
       if(network_send(socket_cliente,msg) == -1){
         printf("Erro ao enviar mensagem\n");
-	close(socket_cliente);
+				close(socket_cliente);
+			  network_server_close();
         return -1;
       }
     }
