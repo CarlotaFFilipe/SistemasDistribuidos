@@ -54,9 +54,9 @@ int network_server_init(short port){
 
   //Fazer bind a um porto usado anteriormente e registado pelo kernel como ainda ocupado
   if(setsockopt(socket_servidor,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option_name,sizeof(option_name)) < 0){
-	printf("Erro no setsockopt\n");
-	close(socket_servidor);
-	return -1;
+		printf("Erro no setsockopt\n");
+		close(socket_servidor);
+		return -1;
   }
   
   // Faz bind
@@ -87,33 +87,37 @@ int network_server_init(short port){
  * - Enviar a resposta ao cliente usando a função network_send.
  */
 int network_main_loop(int listening_socket){
-  //Aceitar uma conexão de um cliente
+bool is_connected = false;
+while(true){
+	//Aceitar uma conexão de um cliente
   if((socket_cliente = accept(listening_socket, (struct sockaddr *) &client, &size_client)) == -1)
-	    return -1;
+	    is_connected = false;
 
-  
-  while(true){
+	else{
+			is_connected = true;
+	}
+  // processar comandos
+  while(is_connected == true){
     struct message_t *msg = network_receive(socket_cliente);
     if(msg == NULL){
-      close(socket_cliente);
-			network_server_close();
       printf("Erro ao receber mensagem\n");
-      return -1;
+      is_connected = false;
     }else{
       if(invoke(msg) == -1){
         printf("Erro ao construir resposta\n");
-        close(socket_cliente);
-        return -1;
+				is_connected = false;
       }
       if(network_send(socket_cliente,msg) == -1){
         printf("Erro ao enviar mensagem\n");
-				close(socket_cliente);
-			  network_server_close();
-        return -1;
+				is_connected = false;
       }
     }
   }
+  
+  // fechar ligacao
   close(socket_cliente);
+}
+	network_server_close();
   return 0;
 }
 

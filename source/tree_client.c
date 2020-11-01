@@ -69,8 +69,8 @@ int main(int argc, char **argv){
 
   //ver quais as acoes
   
-  corrente = (char *) malloc(MAX_MSG);
-  terminal = (char *) malloc(MAX_MSG*sizeof(char));
+  //corrente = (char *) malloc(MAX_MSG);
+  terminal = (char *) malloc(MAX_MSG * sizeof(char));
 
   while(!ctrl_z){
     printf("==>");
@@ -124,9 +124,10 @@ int main(int argc, char **argv){
       struct data_t *data = rtree_get(rt,corrente);
 			if(data == NULL)
 				printf("Nao existe essa key.\n");
-			else
+			else{
       	printf("A data da key %s eh %s\n",corrente, data->data);
-			//data_destroy(data);
+					data_destroy(data);
+			}
       continue;
     }
 
@@ -158,11 +159,9 @@ int main(int argc, char **argv){
     else if(strcmp(corrente,"getkeys") == 0){
       int i=0;
       char **keys = rtree_get_keys(rt);
-			/*while( keys[i] != NULL){
-    		printf("%s  ", keys[i]);
-				i++;
-  		}*/
       printf("Existem estas keys na tree: %s\n", keys);
+			//rtree_free_keys(keys);
+      free(keys);
       continue;
     }
 
@@ -173,7 +172,7 @@ int main(int argc, char **argv){
     }
   }
   //free(corrente);
-  //free(terminal);
+  free(terminal);
   return rtree_disconnect(rt);
 
 }

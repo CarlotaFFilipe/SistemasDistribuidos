@@ -110,24 +110,26 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key){
   rmsg = network_send_receive(rtree, &msg);
   //apos o envio e a recepcao das mensagens, free do
   //allocado previamente em put_request_message
-
+  free(msg.data);
   if (rmsg != NULL){
 		if (rmsg->opcode == 31)
     {
       if (rmsg->data_size >0)
 			{//existe resposta do servidor
         res = data_create(rmsg->data_size +1);
-        if (res == NULL){
-          return NULL;
-        }
-        memcpy(res->data, rmsg->data, res->datasize);
+        if (res != NULL)
+        	memcpy(res->data, rmsg->data, res->datasize);
         //res->data[res->datasize] = '\0';
       }
-      else{//size==0
-				return NULL;
+      else
+      {//size==0
+				res = NULL;
 			}
-    }else//opcode == 99
-			return NULL;
+    }
+    else
+    {//opcode == 99
+			res = NULL;
+    }
     message_t__free_unpacked(rmsg, NULL);
   }
   return res;
