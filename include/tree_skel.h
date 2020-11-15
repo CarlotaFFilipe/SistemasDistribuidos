@@ -27,4 +27,8 @@ void tree_skel_destroy();
 */
 int invoke(struct message_t *msg);
 
+/* Verifica se a operação identificada por op_nfoi executada.
+*/
+int verify(int op_n);
+
 #endif

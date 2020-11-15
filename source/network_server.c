@@ -3,7 +3,7 @@
 // Leonor Candeias n51057
 // Mafalda Paço n53507
 
-
+//TODO network_main_loop
 
 
 #include "tree_skel.h"
@@ -116,6 +116,32 @@ while(true){
 }
 	network_server_close();
   return 0;
+//TODO
+/** Esboço do algoritmo a ser implementado na função network_main_loop*/
+//adiciona listening_socket a desc_set
+//while(poll(desc_set) >= 0) {/* Espera por dados nos sockets abertos */
+//	if(listening_socket tem dados para ler) {/* Verifica se tem novo pedido de conexão */
+//		onnsockfd= accept(listening_socket);
+//	adiciona connsockfd a desc_set
+//	}
+//	for (all socket s em desc_set, excluindo listening_socket) { /* Verifica restantes sockets */
+//		if (s tem dados para ler) {
+//			message = network_receive(s);
+//			if(messageé NULL) {/* Sinal de que a conexão foi fechada pelo cliente */
+//				close(s);
+//				remove s de desc_set
+//			} else {
+//				invoke(message);/* Executa pedido contido em message */
+//				network_send(message); /* Envia resposta contida em message */
+//			}
+//		}
+//		if(s com erro ou POLLHUP) {
+//			close(s);
+//			remove s de desc_set
+//		}
+//	}
+//}
+
 }
 
 /* Esta função deve:

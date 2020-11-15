@@ -59,4 +59,8 @@ char **rtree_get_keys(struct rtree_t *rtree);
  */
 void rtree_free_keys(char **keys);
 
+/* Verifica se a operação identificadapor op_nfoi executada.
+*/
+int rtree_verify(struct rtree_t *rtree,int op_n);
+
 #endif

@@ -18,6 +18,7 @@
 #include "serialization.h"
 #include "inet.h"
 
+
 /* Remote tree. A definir pelo grupo em client_stub-private.h
  */
 //struct rtree_t;
@@ -215,12 +216,6 @@ int rtree_height(struct rtree_t *rtree){
 }
 
 
-
-
-
-
-
-
 /* Devolve um array de char* com a cópia de todas as keys da árvore,
  * colocando um último elemento a NULL.
  */
@@ -243,11 +238,28 @@ char **rtree_get_keys(struct rtree_t *rtree){
 }
 
 
-
-
-
 /* Liberta a memória alocada por rtree_get_keys().
  */
 void rtree_free_keys(char **keys){
   tree_free_keys(keys);
+}
+
+/* Verifica se a operação identificada por op_nfoi executada.*/
+int rtree_verify(struct rtree_t *rtree,int op_n){
+  int res = -1;
+  struct message_t msg, * rmsg;
+  message_t__init(&msg);
+  //verify_request_message(&msg, op_n);   TODO
+  rmsg = network_send_receive(rtree, &msg);
+
+  if(rtree == NULL){
+    return res;
+  }
+  if (rmsg != NULL){
+    if (rmsg->opcode == 61){  //existe resposta do servidor
+      res = rmsg->res;
+    }
+    message_t__free_unpacked(rmsg, NULL);
+  }
+  return res;
 }
