@@ -3,7 +3,8 @@
 // Leonor Candeias n51057
 // Mafalda Paço n53507
 
-//TODO network_main_loop
+//TODO::: Fazer com que o cliente nao feche quando um cliente sai, ver os return e closes do loop
+
 
 
 #include "tree_skel.h"
@@ -24,11 +25,20 @@
 #include <errno.h>
 #include <string.h>
 
+
+#include <poll.h>
+#include <fcntl.h>
+#define NFDESC 4 // Numero de sockets (uma para listening)
+#define TIMEOUT 50 // em milisegundos
+
 //variaveis
 struct sockaddr_in server,client;
 int socket_servidor,socket_cliente;
 socklen_t size_client;
-int option_name;
+int option_name, nfds, kfds, i;
+socklen_t size_client;
+
+struct pollfd connections[NFDESC]; // Estrutura para file descriptors das sockets das ligacoes
 
 //struct message_t *network_receive(int client_socket);
 //int network_send(int client_socket, struct message_t *msg);
@@ -39,40 +49,40 @@ int option_name;
  * Retornar descritor do socket (OK) ou -1 (erro).
  */
 int network_server_init(short port){
-  //Cria o socket do servidor
-  if((socket_servidor= socket(AF_INET,SOCK_STREAM,0))<0){
-    printf("Erro ao criar o socket");
-    return-1;
-  }
-  //Preparar server para fazer bind
-  server.sin_family = AF_INET;
-  server.sin_port = htons(port);
-  server.sin_addr.s_addr = htonl(INADDR_ANY);
+	//Cria o socket do servidor
+	if((socket_servidor= socket(AF_INET,SOCK_STREAM,0))<0){
+		printf("Erro ao criar o socket");
+		return-1;
+	}
+	//Preparar server para fazer bind
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  //Fazer bind a um porto usado anteriormente e registado pelo kernel como ainda ocupado
-  if(setsockopt(socket_servidor,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option_name,sizeof(option_name)) < 0){
+	//Fazer bind a um porto usado anteriormente e registado pelo kernel como ainda ocupado
+	if(setsockopt(socket_servidor,SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option_name,sizeof(option_name)) < 0){
 		printf("Erro no setsockopt\n");
 		close(socket_servidor);
 		return -1;
-  }
-  
-  // Faz bind
-  if (bind(socket_servidor, (struct sockaddr *) &server, sizeof(server)) < 0){
-    printf("Erro no bind\n");
-    close(socket_servidor);
-    return -1;
-  }
+	}
 
-  // Faz listen
-  if (listen(socket_servidor, 0) < 0){
-    printf("Erro ao executar listen\n");
-    close(socket_servidor);
-    return -1;
-  }
+	// Faz bind
+	if (bind(socket_servidor, (struct sockaddr *) &server, sizeof(server)) < 0){
+		printf("Erro no bind\n");
+		close(socket_servidor);
+		return -1;
+	}
 
-  printf("Servidor a espera de dados\n");
+	// Faz listen
+	if (listen(socket_servidor, 0) < 0){
+		printf("Erro ao executar listen\n");
+		close(socket_servidor);
+		return -1;
+	}
 
-  return socket_servidor;
+	printf("Servidor a espera de dados\n");
+
+	return socket_servidor;
 
 }
 
@@ -84,64 +94,57 @@ int network_server_init(short port){
  * - Enviar a resposta ao cliente usando a função network_send.
  */
 int network_main_loop(int listening_socket){
-bool is_connected = false;
-while(true){
-	//Aceitar uma conexão de um cliente
-  if((socket_cliente = accept(listening_socket, (struct sockaddr *) &client, &size_client)) == -1)
-	    is_connected = false;
+	//bool is_connected = false;
 
-	else{
-			is_connected = true;
-	}
-  // processar comandos
-  while(is_connected == true){
-    struct message_t *msg = network_receive(socket_cliente);
-    if(msg == NULL){
-      printf("Erro ao receber mensagem\n");
-      is_connected = false;
-    }else{
-      if(invoke(msg) == -1){
-        printf("Erro ao construir resposta\n");
-				is_connected = false;
-      }
-      if(network_send(socket_cliente,msg) == -1){
-        printf("Erro ao enviar mensagem\n");
-				is_connected = false;
-      }
-    }
-  }
-  
-  // fechar ligacao
-  close(socket_cliente);
-}
+	size_client = sizeof(struct sockaddr);
+
+	for (i = 0; i < NFDESC; i++)
+		connections[i].fd = -1;    // poll ignora estruturas com fd < 0
+
+	connections[0].fd = socket_servidor;  // Vamos detetar eventos na welcoming socket
+	connections[0].events = POLLIN;  // Vamos esperar ligacoes nesta socket
+	nfds = 1; // numero de file descriptors
+
+	// Retorna assim que exista um evento ou que TIMEOUT expire. * FUNCAO POLL *.
+	while ((kfds = poll(connections, nfds, 10)) >= 0) // kfds == 0 significa timeout sem eventos
+
+		if (kfds > 0){ // kfds e o numero de descritores com evento ou erro
+			if ((connections[0].revents & POLLIN) && (nfds < NFDESC))  // Pedido na listening socket ?
+				if ((connections[nfds].fd = accept(connections[0].fd, (struct sockaddr *) &socket_cliente, &size_client)) > 0){
+					connections[nfds].events = POLLIN; // Vamos esperar dados nesta socket
+					nfds++;
+
+				}
+
+			for (i = 1; i < nfds; i++) // Todas as ligacoes
+				if (connections[i].revents & POLLIN) {
+					struct message_t *msg;
+
+					msg = network_receive(connections[i].fd );
+					if(msg == NULL){
+						close(connections[i].fd );
+						printf("Erro ao receber mensagem\n");
+						return -1;
+					}else{
+						if(invoke(msg) == -1){
+							printf("A sair\n");
+							close(connections[i].fd );
+							return -1;
+						}
+
+						if(network_send(connections[i].fd ,msg) == -1){
+							printf("Erro ao enviar mensagem\n");
+							close(connections[i].fd );
+							return -1;
+						}
+					}
+				}
+		}
+
+	// fechar ligacao
+	close(socket_cliente);
 	network_server_close();
-  return 0;
-//TODO
-/** Esboço do algoritmo a ser implementado na função network_main_loop*/
-//adiciona listening_socket a desc_set
-//while(poll(desc_set) >= 0) {/* Espera por dados nos sockets abertos */
-//	if(listening_socket tem dados para ler) {/* Verifica se tem novo pedido de conexão */
-//		onnsockfd= accept(listening_socket);
-//	adiciona connsockfd a desc_set
-//	}
-//	for (all socket s em desc_set, excluindo listening_socket) { /* Verifica restantes sockets */
-//		if (s tem dados para ler) {
-//			message = network_receive(s);
-//			if(messageé NULL) {/* Sinal de que a conexão foi fechada pelo cliente */
-//				close(s);
-//				remove s de desc_set
-//			} else {
-//				invoke(message);/* Executa pedido contido em message */
-//				network_send(message); /* Envia resposta contida em message */
-//			}
-//		}
-//		if(s com erro ou POLLHUP) {
-//			close(s);
-//			remove s de desc_set
-//		}
-//	}
-//}
-
+	return 0;
 }
 
 /* Esta função deve:
@@ -150,7 +153,7 @@ while(true){
  *   reservando a memória necessária para a estrutura message_t.
  */
 struct message_t *network_receive(int client_socket){
-  return rcv_msg_socket(client_socket);
+	return rcv_msg_socket(client_socket);
 }
 
 /* Esta função deve:
@@ -159,18 +162,18 @@ struct message_t *network_receive(int client_socket){
  * - Enviar a mensagem serializada, através do client_socket.
  */
 int network_send(int client_socket, struct message_t *msg){
-  int res = snd_msg_socket(msg, client_socket);
-  message_t__free_unpacked(msg, NULL);
-  return res;
+	int res = snd_msg_socket(msg, client_socket);
+	message_t__free_unpacked(msg, NULL);
+	return res;
 }
 
 /* A função network_server_close() liberta os recursos alocados por
  * network_server_init().
  */
 int network_server_close(){
-  int result;
-  if((result= close(socket_servidor)) == -1)
-    return -1;
-  //close do client_socket eh feito no loop
-  return result;
+	int result;
+	if((result= close(socket_servidor)) == -1)
+		return -1;
+	//close do client_socket eh feito no loop
+	return result;
 }
