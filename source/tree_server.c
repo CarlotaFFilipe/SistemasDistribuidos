@@ -19,14 +19,11 @@
 #include <signal.h>
 
 
-
 //handler para os sinais SIGINT e SIGQUIT
 void quit_handler (int sig){
   tree_skel_destroy();
   network_server_close();
 }
-
-
 
 
 int testInput(int argc){
