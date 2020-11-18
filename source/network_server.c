@@ -1,11 +1,9 @@
 // Grupo21
 // Carlota Filipe n51027
-// Leonor Candeias n51057
+// Leonor Candeias n51057 
 // Mafalda Paço n53507
 
 //TODO::: Fazer com que o cliente nao feche quando um cliente sai, ver os return e closes do loop
-
-
 
 #include "tree_skel.h"
 #include "network_server.h"
@@ -36,7 +34,7 @@ struct sockaddr_in server,client;
 int socket_servidor,socket_cliente;
 socklen_t size_client;
 int option_name, nfds, kfds, i;
-socklen_t size_client;
+//socklen_t size_client;
 
 struct pollfd connections[NFDESC]; // Estrutura para file descriptors das sockets das ligacoes
 
@@ -95,52 +93,51 @@ int network_server_init(short port){
  */
 int network_main_loop(int listening_socket){
 	//bool is_connected = false;
-
 	size_client = sizeof(struct sockaddr);
 
-	for (i = 0; i < NFDESC; i++)
+	for (i = 0; i < NFDESC; i++){
 		connections[i].fd = -1;    // poll ignora estruturas com fd < 0
+	}
 
 	connections[0].fd = socket_servidor;  // Vamos detetar eventos na welcoming socket
 	connections[0].events = POLLIN;  // Vamos esperar ligacoes nesta socket
 	nfds = 1; // numero de file descriptors
 
 	// Retorna assim que exista um evento ou que TIMEOUT expire. * FUNCAO POLL *.
-	while ((kfds = poll(connections, nfds, 10)) >= 0) // kfds == 0 significa timeout sem eventos
+	while ((kfds = poll(connections, nfds, 10)) >= 0){ // kfds == 0 significa timeout sem eventos
 
 		if (kfds > 0){ // kfds e o numero de descritores com evento ou erro
-			if ((connections[0].revents & POLLIN) && (nfds < NFDESC))  // Pedido na listening socket ?
+			if ((connections[0].revents & POLLIN) && (nfds < NFDESC)){  // Pedido na listening socket ?
 				if ((connections[nfds].fd = accept(connections[0].fd, (struct sockaddr *) &socket_cliente, &size_client)) > 0){
 					connections[nfds].events = POLLIN; // Vamos esperar dados nesta socket
 					nfds++;
-
 				}
-
-			for (i = 1; i < nfds; i++) // Todas as ligacoes
+			}
+			for (i = 1; i < nfds; i++){ // Todas as ligacoes
 				if (connections[i].revents & POLLIN) {
-					struct message_t *msg;
-
-					msg = network_receive(connections[i].fd );
+					struct message_t *msg = network_receive(connections[i].fd );
 					if(msg == NULL){
-						close(connections[i].fd );
-						printf("Erro ao receber mensagem\n");
+						close(connections[i].fd);
+						printf("Erro ao receber mensagem. Socket %d fechada\n", connections[i].fd);
+						nfds--;
 						return -1;
-					}else{
+					} else{
 						if(invoke(msg) == -1){
 							printf("A sair\n");
 							close(connections[i].fd );
 							return -1;
 						}
-
 						if(network_send(connections[i].fd ,msg) == -1){
-							printf("Erro ao enviar mensagem\n");
-							close(connections[i].fd );
+							printf("Erro ao enviar mensagem. Socket %d fechada\n", connections[i].fd);
+							close(connections[i].fd);
+							nfds--;
 							return -1;
 						}
 					}
 				}
+			}
 		}
-
+	}
 	// fechar ligacao
 	close(socket_cliente);
 	network_server_close();
