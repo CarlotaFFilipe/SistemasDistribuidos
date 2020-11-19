@@ -87,7 +87,7 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
   free(entry);
   if (rmsg != NULL){
     if (rmsg->opcode == 41){//existe resposta do servidor
-      res = 0;
+      res = rmsg->res;;
     }
     message_t__free_unpacked(rmsg, NULL);
   }
@@ -159,7 +159,7 @@ int rtree_del(struct rtree_t *rtree, char *key){
 		}
     else if (rmsg->opcode == 21){//existe resposta do servidor
 			printf("A chave foi %s eliminada.\n", key);
-      res = 0;
+      res = rmsg->res;;
     }
     message_t__free_unpacked(rmsg, NULL);
   }
