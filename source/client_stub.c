@@ -245,11 +245,10 @@ void rtree_free_keys(char **keys){
 }
 
 /* Verifica se a operação identificada por op_nfoi executada.*/
-int rtree_verify(struct rtree_t *rtree,int op_n){
+int rtree_verify(struct rtree_t *rtree, int op_n){
   int res = -1;
   struct message_t msg, * rmsg;
   message_t__init(&msg);
-  //verify_request_message(&msg, op_n);   TODO
   rmsg = network_send_receive(rtree, &msg);
 
   if(rtree == NULL){
