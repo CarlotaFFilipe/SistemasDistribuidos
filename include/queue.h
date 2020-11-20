@@ -1,4 +1,7 @@
-
+// Grupo21
+// Carlota Filipe n51027
+// Leonor Candeias n51057
+// Mafalda Paço n53507
 
 //struct que guarda a cabeca e a cauda da fila assim como o seu tamanho
 struct queue_t {

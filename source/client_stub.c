@@ -82,12 +82,10 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
 	//allocado previamente em put_request_message
 	free(msg.key);
 	free(msg.data);
-	//entry_destoy(entry);
-	//free(entry->value->data);
 	free(entry);
 	if (rmsg != NULL){
 		if (rmsg->opcode == 41){//existe resposta do servidor
-			res = rmsg->res;;
+			res = rmsg->res;
 		}
 		message_t__free_unpacked(rmsg, NULL);
 	}

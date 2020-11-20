@@ -1,11 +1,13 @@
-
+// Grupo21
+// Carlota Filipe n51027
+// Leonor Candeias n51057
+// Mafalda Paço n53507
 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
 #include "task.h"
-
 
 struct task_t* create_task(int op_n, int op, char* key, char* data, int datasize){
 

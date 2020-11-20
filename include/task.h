@@ -1,6 +1,7 @@
-
-
-
+// Grupo21
+// Carlota Filipe n51027
+// Leonor Candeias n51057
+// Mafalda Paço n53507
 
 
 /* struct que guarda a informacao necessaria para executar um pedido de escrita

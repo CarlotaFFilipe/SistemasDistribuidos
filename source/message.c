@@ -206,10 +206,9 @@ int del_request_message(struct message_t * msg, char * key){
 	return 0;
 }
 
-int del_response_message(struct message_t * msg, char * key){
+int del_response_message(struct message_t * msg){
 	msg->c_type= 60;
 	msg->data_size = 0;
-	free(msg->data);
 	msg->data = NULL;
 	msg->n_keys = 0;
 	return 0;
@@ -314,4 +313,5 @@ void error_response_message(struct message_t * msg){
 	msg->c_type = 60;
 	msg->data_size = 0;
 	msg->n_keys = 0;
+  msg->data = NULL;
 }

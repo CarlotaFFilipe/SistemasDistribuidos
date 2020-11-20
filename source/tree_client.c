@@ -169,7 +169,7 @@ int main(int argc, char **argv){
 				printf("Comando verify mal escrito, por favor faca o input desta maneira: put <key> <data>\n");
 				continue;
 			}
-			int result = rtree_verify(rtree, atoi(op_n));
+			int result = rtree_verify(rt, atoi(op_n));
       if(result == 0)
 				printf("Essa operacao ja foi executada.\n");
       else
