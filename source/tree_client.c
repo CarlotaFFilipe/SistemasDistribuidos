@@ -155,7 +155,6 @@ int main(int argc, char **argv){
 
 
 
-
     else if(strcmp(corrente,"getkeys") == 0){
       int i=0;
       char **keys = rtree_get_keys(rt);
@@ -164,10 +163,22 @@ int main(int argc, char **argv){
       free(keys);
       continue;
     }
+		else if(strcmp(corrente,"verify")==0){
+			char* op_n= strtok(NULL,"\0");
+			if(corrente == NULL){
+				printf("Comando verify mal escrito, por favor faca o input desta maneira: put <key> <data>\n");
+				continue;
+			}
+			int result = rtree_verify(rtree, atoi(op_n));
+      if(result == 0)
+				printf("Essa operacao ja foi executada.\n");
+      else
+				printf("Essa operacao esta na fila de espera ou nao existe.\n");
+		}
 
 
     else{
-      printf("Comando inválido. Exemplo de comandos:\n size\n height \n del <key>\n get <key> \n put <key> <data> \n getkeys\n quit\n");
+      printf("Comando inválido. Exemplo de comandos:\n size\n height \n del <key>\n get <key> \n put <key> <data> \n getkeys\n verify <op_n>\n quit\n");
       continue;
     }
   }

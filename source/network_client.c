@@ -26,33 +26,33 @@
  * - Retornar 0 (OK) ou -1 (erro).
  */
 int network_connect(struct rtree_t *rtree){
-    //criar socket TCP
-  if ((rtree->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    //free(rtree->hostname);
-    //free(rtree->port);
-    perror("Erro ao criar socket TCP");
-    return -1;
-  }
-  //Preenche estrutura server para estabelecer conexão dando o endereco e o porto
-  rtree->server.sin_family = AF_INET;
-  rtree->server.sin_port = htons(atoi(rtree->port));
-  if (inet_pton(AF_INET, rtree->hostname, &rtree->server.sin_addr) < 1) {
-    //free(rtree->hostname);
-    //free(rtree->port);
-    printf("Erro ao converter IP\n");
-    close(rtree->socket);
-    return -1;
-  }
-  // Estabelece conexão com o servidor definido em server
-  if (connect(rtree->socket,(struct sockaddr *)&rtree->server, sizeof(rtree->server)) < 0) {
-    //free(rtree->hostname);
-    //free(rtree->port);
-    perror("Erro ao conectar-se ao servidor");
-    close(rtree->socket);
-    return -1;
-  }
-  printf("Ligado ao servidor.\n");
-  return 0;
+	//criar socket TCP
+	if ((rtree->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		//free(rtree->hostname);
+		//free(rtree->port);
+		perror("Erro ao criar socket TCP");
+		return -1;
+	}
+	//Preenche estrutura server para estabelecer conexão dando o endereco e o porto
+	rtree->server.sin_family = AF_INET;
+	rtree->server.sin_port = htons(atoi(rtree->port));
+	if (inet_pton(AF_INET, rtree->hostname, &rtree->server.sin_addr) < 1) {
+		//free(rtree->hostname);
+		//free(rtree->port);
+		printf("Erro ao converter IP\n");
+		close(rtree->socket);
+		return -1;
+	}
+	// Estabelece conexão com o servidor definido em server
+	if (connect(rtree->socket,(struct sockaddr *)&rtree->server, sizeof(rtree->server)) < 0) {
+		//free(rtree->hostname);
+		//free(rtree->port);
+		perror("Erro ao conectar-se ao servidor");
+		close(rtree->socket);
+		return -1;
+	}
+	printf("Ligado ao servidor.\n");
+	return 0;
 
 
 }
@@ -66,23 +66,23 @@ int network_connect(struct rtree_t *rtree){
  * - Retornar a mensagem de-serializada ou NULL em caso de erro.
  */
 struct message_t *network_send_receive(struct rtree_t * rtree,
-                                       struct message_t *msg){
+		struct message_t *msg){
 
-  int socket = rtree->socket;
-  //enviar mensagem
-  if (snd_msg_socket(msg, socket) == -1){
-    printf("Erro ao enviar mensagem para o servidor. Ligacao fechada\n");
-    close(socket);
-    return NULL;
-  }
-  //mensagem recebida
-  struct message_t * rmsg = rcv_msg_socket(socket);
-  if (msg == NULL){
-    printf("Erro ao receber mensagem do servidor. Ligacao fechada\n");
-    close(socket);
-    return NULL;
-  }
-  return rmsg;
+	int socket = rtree->socket;
+	//enviar mensagem
+	if (snd_msg_socket(msg, socket) == -1){
+		printf("Erro ao enviar mensagem para o servidor. Ligacao fechada\n");
+		close(socket);
+		return NULL;
+	}
+	//mensagem recebida
+	struct message_t * rmsg = rcv_msg_socket(socket);
+	if (msg == NULL){
+		printf("Erro ao receber mensagem do servidor. Ligacao fechada\n");
+		close(socket);
+		return NULL;
+	}
+	return rmsg;
 
 
 }
@@ -91,9 +91,9 @@ struct message_t *network_send_receive(struct rtree_t * rtree,
  * network_connect().
  */
 int network_close(struct rtree_t * rtree){
-  close(rtree->socket);//devo fazer if ==-1 em caso de erro?
-  free(rtree->hostname);
-  free(rtree->port);
-  free(rtree);
-  return 0;
+	close(rtree->socket);//devo fazer if ==-1 em caso de erro?
+	free(rtree->hostname);
+	free(rtree->port);
+	free(rtree);
+	return 0;
 }
