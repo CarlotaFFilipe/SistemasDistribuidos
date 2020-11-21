@@ -76,6 +76,8 @@ void * process_task(void * params){
 	int size = -1;
 
 	while(ts_stop_flag == 0){
+
+		//task = empty_queue(queue, queue_lock, queue_not_empty);
 		pthread_mutex_lock(&queue_lock);
 		size = queue_size(queue);
 		if (size == 0)//ficar a espera caso nao haja nenhuma thread na fila
@@ -172,12 +174,11 @@ int invoke(struct message_t *msg){
 		struct task_t * task = create_task(last_assigned, 0, strdup(msg->data), NULL, 0);
 		free(msg->data);
 		if(task == NULL){
-			msg->opcode = 99;
+			none_response_message(msg);
 		} else{
-			msg->opcode +=1;
+			del_response_message(msg, last_assigned);
 			last_assigned ++;
 		}
-		del_response_message(msg);
 		pthread_mutex_lock(&queue_lock);
 		enqueue(queue, task);
 		pthread_cond_signal(&queue_not_empty);
@@ -227,12 +228,11 @@ int invoke(struct message_t *msg){
 		msg->key = NULL;
 		msg->data = NULL;
 		if (task == NULL){
-			msg->opcode = 99;
+			none_response_message(msg);
 		}else{
-			msg->opcode += 1;
+			put_response_message(msg, last_assigned);
 			last_assigned ++;
 		}
-		put_response_message(msg);
 
 		pthread_mutex_lock(&queue_lock);
 		enqueue(queue, task);

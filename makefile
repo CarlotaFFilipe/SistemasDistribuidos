@@ -34,7 +34,7 @@ serialization.o: $(INCLUDE)serialization.h $(INCLUDE)data.h $(INCLUDE)entry.h $(
 message.o: $(INCLUDE)inet.h $(INCLUDE)data.h $(INCLUDE)serialization.h $(INCLUDE)message-private.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)message.c -o $(OBJ)message.o
 
-task.o: $(INCLUDE)task.h $(INCLUDE)queue.h
+task.o: $(INCLUDE)task.h
 	$(FLAG) $(SRC)task.c -o $(OBJ)task.o
 
 queue.o: $(INCLUDE)task.h $(INCLUDE)queue.h

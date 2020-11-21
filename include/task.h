@@ -23,5 +23,3 @@ struct task_t * create_task(int op_n, int op, char* key, char* data, int datasiz
 void destroy_task(struct task_t * task);
 
 
-//remove a cabeca da fila q e devolve-a. a memoria alocada pela task nao e libertada
-struct task_t * dequeue(struct queue_t * q);

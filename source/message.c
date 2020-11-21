@@ -121,8 +121,6 @@ int put_request_message(struct message_t * msg, struct entry_t * entry){
 	int offset=0;
 	msg->opcode = 40;
 	msg->c_type = 30;
-	//msg->data_size = entry_to_buffer(entry, &msg->data);
-
 	msg->data_size = entry->value->datasize;
 	msg->data= malloc (msg->data_size+1);
 	memcpy(msg->data, entry->value->data, msg->data_size);
@@ -133,10 +131,11 @@ int put_request_message(struct message_t * msg, struct entry_t * entry){
 	return 0;
 }
 
-int put_response_message(struct message_t * msg){
+int put_response_message(struct message_t * msg, int op_n){
 	msg->c_type = 60;
 	msg->data_size = 0;
 	msg->data = NULL;
+	msg->res = op_n;
 	return 0;
 }
 
@@ -206,11 +205,12 @@ int del_request_message(struct message_t * msg, char * key){
 	return 0;
 }
 
-int del_response_message(struct message_t * msg){
+int del_response_message(struct message_t * msg, int op_n){
 	msg->c_type= 60;
 	msg->data_size = 0;
 	msg->data = NULL;
 	msg->n_keys = 0;
+  msg->res = op_n;
 	return 0;
 }
 
@@ -284,7 +284,7 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys){
 		memcpy(msg->data + offset, keys[i], strlen(keys[i]));     offset += strlen(keys[i]);
 		memcpy(msg->data + offset, " ", 1);                       offset +=1;
 	}
-	memcpy(msg->data + offset, "\0", 1);                       offset +=1;
+	memcpy(msg->data + offset, "\0", 1);                        offset +=1;
 	msg->data_size= offset;
 
 	return 0;
@@ -303,6 +303,9 @@ void verify_response_message(struct message_t * msg, int op_n){
 	msg->opcode += 1;
 	msg->c_type = 50;
 	msg->res = op_n;
+	msg->data_size = 0;
+	msg->n_keys = 0;
+  msg->data = NULL;
 }
 
 
@@ -310,6 +313,14 @@ void verify_response_message(struct message_t * msg, int op_n){
 
 void error_response_message(struct message_t * msg){
 	msg->opcode = 99;
+	msg->c_type = 60;
+	msg->data_size = 0;
+	msg->n_keys = 0;
+  msg->data = NULL;
+}
+
+void none_response_message(struct message_t * msg){
+	msg->opcode +=1;
 	msg->c_type = 60;
 	msg->data_size = 0;
 	msg->n_keys = 0;

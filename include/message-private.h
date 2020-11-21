@@ -25,7 +25,7 @@ int write_nbytes (int socket, void * buf, int length);
 
 int put_request_message(struct message_t * msg, struct entry_t * entry);
 
-int put_response_message(struct message_t * msg);
+int put_response_message(struct message_t * msg, int op_n);
 
 int get_request_message(struct message_t * msg, char * key);
 
@@ -33,7 +33,7 @@ int get_response_message(struct message_t * msg, struct data_t * res);
 
 int del_request_message(struct message_t * msg, char * key);
 
-int del_request_message(struct message_t * msg, char * key);
+int del_response_message(struct message_t * msg, int op_n);
 
 void size_request_message(struct message_t * msg);
 
@@ -49,5 +49,6 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys);
 
 void error_response_message(struct message_t * msg);
 
+void none_response_message(struct message_t * msg);
 
 #endif

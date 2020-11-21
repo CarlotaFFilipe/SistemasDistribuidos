@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "queue.h"
 #include "task.h"
 
 struct task_t* create_task(int op_n, int op, char* key, char* data, int datasize){
@@ -36,19 +35,3 @@ void destroy_task(struct task_t * task){
   }
 }
 
-struct task_t * dequeue(struct queue_t * q){
-  if (q->head == NULL){
-    return NULL;
-  }
-
-  struct task_t * temp = q->head;
-
-  q->head = q->head->next;
-  if (q->head == NULL){
-    q->tail = NULL;
-  }
-
-  q->size --;
-  return temp;
-
-}
