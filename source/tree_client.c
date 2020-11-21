@@ -8,6 +8,7 @@
 #include "client_stub-private.h"
 #include "data.h"
 #include "entry.h"
+#include "tree_skel.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -23,6 +24,8 @@
 #include <signal.h>
 
 #define MAX_MSG 2048
+
+extern int last_assigned;
 
 int test_input(int argc, char **argv){
   int res= 0;
@@ -111,6 +114,7 @@ int main(int argc, char **argv){
 				continue;
 			}
       rtree_del(rt,corrente);
+      printf("A chave foi retirada com sucesso. Last_assigned igual a %s\n", last_assigned);
       continue;
     }
 
@@ -125,7 +129,7 @@ int main(int argc, char **argv){
 			if(data == NULL)
 				printf("Nao existe essa key.\n");
 			else{
-      	printf("A data da key %s eh %s\n",corrente, data->data);
+      	printf("A data na key %s eh %s\n",corrente, data->data);
 					data_destroy(data);
 			}
       continue;
@@ -149,7 +153,7 @@ int main(int argc, char **argv){
       struct entry_t *entry = entry_create(key,data);
       rtree_put(rt,entry);
 			free(data);
-      printf("A chave foi posta com sucesso\n");
+      printf("A chave foi posta com sucesso. Last_assigned igual a %s\n", last_assigned);
       continue;
     }
 

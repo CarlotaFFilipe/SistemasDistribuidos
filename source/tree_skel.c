@@ -27,7 +27,7 @@
 int verify(int op_n);
 struct tree_t *tree;
 struct queue_t *queue;
-int ts_stop_flag = 0;
+int stop_flag = 0;
 
 int last_assigned = 0, op_count = 0;
 pthread_t thread;
@@ -75,7 +75,7 @@ void * process_task(void * params){
 	int res = 0;
 	int size = -1;
 
-	while(ts_stop_flag == 0){
+	while(stop_flag == 0){
 
 		//task = empty_queue(queue, queue_lock, queue_not_empty);
 		pthread_mutex_lock(&queue_lock);
@@ -131,6 +131,7 @@ int tree_skel_init(){
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */
 void tree_skel_destroy(){
+	stop_flag = 1;
 	pthread_cond_signal(&queue_not_empty);
 	if (pthread_join(thread, NULL) != 0){
 		perror("Join.");
@@ -160,11 +161,6 @@ int invoke(struct message_t *msg){
 		size_response_message(msg, size);
 		return 0;
 
-
-
-
-
-
 	} else if(msg->opcode == 20){ 
 		if(msg->c_type!=10 || msg->n_keys != 1){
 			printf("A mensagem del foi composta incorretamente\n");
@@ -185,12 +181,6 @@ int invoke(struct message_t *msg){
 		pthread_mutex_unlock(&queue_lock);
 		return 0;
 
-
-
-
-
-
-
 	} else if(msg->opcode == 30){ 
 		if(msg->c_type!=10 || msg->n_keys != 1){
 			printf("A mensagem get foi composta incorretamente\n");
@@ -210,12 +200,6 @@ int invoke(struct message_t *msg){
 		}
 		data_destroy(data);
 		return 0;
-
-
-
-
-
-
 
 	} else if(msg->opcode == 40){
 		if(msg->c_type!=30 || msg->n_keys != 1){
@@ -241,12 +225,6 @@ int invoke(struct message_t *msg){
 		}
 		return 0;
 
-
-
-
-
-
-
 	} else if(msg->opcode == 50){ //getkeys
 		//A mensagem foi composta incorretamente
 		if(msg->c_type!=60){
@@ -263,8 +241,6 @@ int invoke(struct message_t *msg){
 		get_keys_response_message(msg, keys, size);
 		tree_free_keys(keys);
 		return 0;
-
-
 
 	} else if(msg->opcode == 60){//height
 		//A mensagem foi composta incorretamente

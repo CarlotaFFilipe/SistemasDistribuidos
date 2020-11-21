@@ -10,6 +10,7 @@
 #include "message-private.h"
 #include "tree.h"
 
+int last_assigned;
 /* Inicia o skeleton da árvore.
  * O main() do servidor deve chamar esta função antes de poder usar a
  * função invoke(). 
