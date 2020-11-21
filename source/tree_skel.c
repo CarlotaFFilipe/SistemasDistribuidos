@@ -227,17 +227,18 @@ int invoke(struct message_t *msg){
 		free(msg->key);
 		msg->key = NULL;
 		msg->data = NULL;
+
+		pthread_mutex_lock(&queue_lock);
+		enqueue(queue, task);
+		pthread_cond_signal(&queue_not_empty);
+		pthread_mutex_unlock(&queue_lock);
+
 		if (task == NULL){
 			none_response_message(msg);
 		}else{
 			put_response_message(msg, last_assigned);
 			last_assigned ++;
 		}
-
-		pthread_mutex_lock(&queue_lock);
-		enqueue(queue, task);
-		pthread_cond_signal(&queue_not_empty);
-		pthread_mutex_unlock(&queue_lock);
 		return 0;
 
 

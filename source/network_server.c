@@ -84,6 +84,12 @@ int network_server_init(short port){
 
 }
 
+void reorganize_connection_array(int i, int size){
+	for(int j = i; j < size; j++){
+		memcpy(&(connections[j]), &(connections[j+1]), sizeof(struct pollfd));
+	}
+}
+
 /* Esta função deve:
  * - Aceitar uma conexão de um cliente;
  * - Receber uma mensagem usando a função network_receive;
@@ -92,7 +98,7 @@ int network_server_init(short port){
  * - Enviar a resposta ao cliente usando a função network_send.
  */
 int network_main_loop(int listening_socket){
-	//bool is_connected = false;
+	bool is_connected = true;
 	size_client = sizeof(struct sockaddr);
 
 	for (i = 0; i < NFDESC; i++){
@@ -102,6 +108,8 @@ int network_main_loop(int listening_socket){
 	connections[0].fd = socket_servidor;  // Vamos detetar eventos na welcoming socket
 	connections[0].events = POLLIN;  // Vamos esperar ligacoes nesta socket
 	nfds = 1; // numero de file descriptors
+
+
 
 	// Retorna assim que exista um evento ou que TIMEOUT expire. * FUNCAO POLL *.
 	while ((kfds = poll(connections, nfds, 10)) >= 0){ // kfds == 0 significa timeout sem eventos
@@ -114,30 +122,36 @@ int network_main_loop(int listening_socket){
 				}
 			}
 			for (i = 1; i < nfds; i++){ // Todas as ligacoes
+				is_connected = true;
 				if (connections[i].revents & POLLIN) {
 					struct message_t *msg = network_receive(connections[i].fd );
 					if(msg == NULL){
-						close(connections[i].fd);
-						printf("Erro ao receber mensagem. Socket %d fechada\n", connections[i].fd);
-						nfds--;
-						return -1;
+						printf(" Socket %d fechada\n", connections[i].fd);
+						is_connected =false;
 					} else{
 						if(invoke(msg) == -1){
 							printf("A sair\n");
-							close(connections[i].fd );
-							return -1;
+							is_connected = false;
 						}
-						if(network_send(connections[i].fd ,msg) == -1){
+						else if(network_send(connections[i].fd ,msg) == -1){
 							printf("Erro ao enviar mensagem. Socket %d fechada\n", connections[i].fd);
-							close(connections[i].fd);
-							nfds--;
-							return -1;
+							is_connected = false;
 						}
+					}
+					if ( is_connected == false )
+          			{
+						close(connections[i].fd);
+						reorganize_connection_array(i, nfds);
+						nfds--;
+						i--;
+					
 					}
 				}
 			}
 		}
 	}
+
+
 	// fechar ligacao
 	close(socket_cliente);
 	network_server_close();
