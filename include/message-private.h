@@ -49,6 +49,4 @@ int get_keys_response_message(struct message_t * msg, char ** keys, int n_keys);
 
 void error_response_message(struct message_t * msg);
 
-void none_response_message(struct message_t * msg);
-
 #endif

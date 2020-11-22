@@ -10,28 +10,28 @@
 
 struct task_t* create_task(int op_n, int op, char* key, char* data, int datasize){
 
-  struct task_t * task = (struct task_t*)malloc(sizeof(struct task_t));
-  if (task == NULL){
-    return NULL;
-  }
+	struct task_t * task = (struct task_t*)malloc(sizeof(struct task_t));
+	if (task == NULL){
+		return NULL;
+	}
 
-  task->key = key;
-  task->data = data;
-  task->datasize = datasize;
-  task->op_n = op_n;
-  task->op = op;
-  task->next = NULL;
+	task->key = key;
+	task->data = data;
+	task->datasize = datasize;
+	task->op_n = op_n;
+	task->op = op;
+	task->next = NULL;
 
-  return task;
+	return task;
 }
 
 void destroy_task(struct task_t * task){
-  if (task != NULL){
-    if (task->key != NULL)
-      free(task->key);
-    if (task->data != NULL)
-      free(task->data);
-    free(task);
-  }
+	if (task != NULL){
+		if (task->key != NULL)
+			free(task->key);
+		if (task->data != NULL)
+			free(task->data);
+		free(task);
+	}
 }
 

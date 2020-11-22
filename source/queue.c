@@ -16,72 +16,60 @@
 
 struct queue_t * create_queue(){
 
-  struct queue_t * q = (struct queue_t *)malloc(sizeof(struct queue_t));
-  if (q == NULL){
-    return NULL;
-  }
+	struct queue_t * q = (struct queue_t *)malloc(sizeof(struct queue_t));
+	if (q == NULL){
+		return NULL;
+	}
 
-  q->head = NULL;
-  q->tail = NULL;
-  q->size = 0;
+	q->cabeca = NULL;
+	q->cauda = NULL;
+	q->size = 0;
 
-  return q;
+	return q;
 }
 
 int enqueue(struct queue_t * q, struct task_t * task){
-  if (q == NULL || task == NULL){
-    return -1;
-  }
-  if (q->tail == NULL) {
-    q->head = task;
-    q->tail = task;
-  } else {
-    q->tail->next = task;
-    q->tail = task;
-  }
-  q->size ++;
-  return 0;
+	if (q == NULL || task == NULL){
+		return -1;
+	}//queue com apenas 1 apos a insercao
+	if (q->cauda == NULL) {
+		q->cabeca = task;
+		q->cauda = task;
+	} else {
+		q->cauda->next = task;
+		q->cauda = task;
+	}
+	q->size ++;
+	return 0;
 }
 
 
 struct task_t * dequeue(struct queue_t * q){
-  if (q->head == NULL){
-    return NULL;
-  }
+	if (q->cabeca == NULL){
+		return NULL;
+	}
+	//sera que devia libertar a memoria aqui????
+	struct task_t * temp = q->cabeca;
+	q->cabeca = q->cabeca->next;//atualiza o apontador para a "nova" cabeca
 
-  struct task_t * temp = q->head;
+	if (q->cabeca == NULL){//queue sa tinha 1 elemento, por isso fica vazia
+		q->cauda = NULL;
+	}
 
-  q->head = q->head->next;
-  if (q->head == NULL){
-    q->tail = NULL;
-  }
-
-  q->size --;
-  return temp;
+	q->size --;
+	return temp;
 
 }
 
 int queue_size(struct queue_t * q){
-  return q->size;
+	return q->size;
 }
 
 void queue_destroy(struct queue_t * q){
-  if (q == NULL)
-    return;
-  while(q->head != NULL){
-    destroy_task(dequeue(q));
-  }
-  free(q);
-}
-
-struct task_t *empty_queue(struct queue_t *queue, pthread_mutex_t queue_lock, pthread_cond_t queue_not_empty){
-	pthread_mutex_lock(&queue_lock);
-	int size = queue_size(queue);
-	if (size == 0)//ficar a espera caso nao haja nenhuma thread na fila
-		pthread_cond_wait(&queue_not_empty, &queue_lock);
-	//como existe tasks, consumir uma task da fila
-	struct task_t *task = dequeue(queue);
-	pthread_mutex_unlock(&queue_lock);
-
-	return task;
+	if (q == NULL)
+		return;
+	while(q->cabeca != NULL){
+		destroy_task(dequeue(q));
+	}
+	free(q);
 }

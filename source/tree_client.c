@@ -25,169 +25,187 @@
 
 #define MAX_MSG 2048
 
-extern int last_assigned;
 
 int test_input(int argc, char **argv){
-  int res= 0;
-  if(argc != 2){
-    printf("tree_client <ip servidor>:<porta servidor>\n");
-    printf("Exemplo de uso: ./binary/tree_client 127.0.0.1:12345\n");
-    res= -1;
-  }
-  //ver se existe o caracter ':'
-  else if(strstr(argv[1],":") == NULL){
-    printf("Uso: ./tree_client <hostname>:<port>\n");
-    printf("Exemplo de uso: ./tree_client 127.0.0.1:12345\n");
-    res = -1;
-  }
-  return 0;
+	int res= 0;
+	if(argc != 2){
+		printf("tree_client <ip servidor>:<porta servidor>\n");
+		printf("Exemplo de uso: ./binary/tree_client 127.0.0.1:12345\n");
+		res= -1;
+	}
+	//ver se existe o caracter ':'
+	else if(strstr(argv[1],":") == NULL){
+		printf("Uso: ./tree_client <hostname>:<port>\n");
+		printf("Exemplo de uso: ./tree_client 127.0.0.1:12345\n");
+		res = -1;
+	}
+	return 0;
 }
 
 void client_handler (struct rtree_t *rt){
-  rtree_disconnect(rt);
-  exit(0);
+	rtree_disconnect(rt);
+	exit(0);
 }
 
 int main(int argc, char **argv){
 
-  struct rtree_t *rt;
-  char* terminal;
-  char* corrente;
-  bool ctrl_z = false;
-  int tamanho = 0;
+	struct rtree_t *rt;
+	char* terminal;
+	char* corrente;
+	bool ctrl_z = false;
+	int tamanho = 0;
 
-  if(test_input(argc, argv)==-1)
-    return -1;
+	if(test_input(argc, argv)==-1)
+		return -1;
 
-//conectar com o porto e ip
-  rt = rtree_connect(argv[1]);
-  if(rt == NULL)
-    return -1;
-	
-  signal(SIGINT, client_handler);
-  signal(SIGQUIT, client_handler);
-  //Evita crash devido ao fecho da ligação
-  signal(SIGPIPE, SIG_IGN);
+	//conectar com o porto e ip
+	rt = rtree_connect(argv[1]);
+	if(rt == NULL)
+		return -1;
 
-
-  //ver quais as acoes
-  
-  //corrente = (char *) malloc(MAX_MSG);
-  terminal = (char *) malloc(MAX_MSG * sizeof(char));
-
-  while(!ctrl_z){
-    printf("==>");
-    fgets(terminal, MAX_MSG, stdin);
-    terminal[strlen(terminal) -1] = '\0';
-
-    tamanho = strlen(terminal);
-    if(tamanho>1)
-      corrente = strtok(terminal," ");
-    else
-      corrente = terminal;
+	signal(SIGINT, client_handler);
+	signal(SIGQUIT, client_handler);
+	//Evita crash devido ao fecho da ligação
+	signal(SIGPIPE, SIG_IGN);
 
 
-//ver todas as acoes
-//caso paramentros a mais num certo comando, o codigo irah ignora-los
-    if(strcmp(corrente,"quit") == 0){
-      ctrl_z = true;
-      continue;
-    }
+	//ver quais as acoes
+
+	terminal = (char *) malloc(MAX_MSG * sizeof(char));
+
+	while(!ctrl_z){
+		printf("==>");
+		fgets(terminal, MAX_MSG, stdin);
+		terminal[strlen(terminal) -1] = '\0';
+
+		tamanho = strlen(terminal);
+		if(tamanho>1)
+			corrente = strtok(terminal," ");
+		else
+			corrente = terminal;
 
 
-    else if(strcmp(corrente,"size") == 0){
-      printf("Numero de entries na tree: %d\n",rtree_size(rt));
-      continue;
-    }
+		//ver todas as acoes
+		//caso paramentros a mais num certo comando, o codigo irah ignora-los
+		if(strcmp(corrente,"quit") == 0){
+			ctrl_z = true;
+			continue;
+		}
 
 
-    else if(strcmp(corrente,"height") == 0){
-      printf("Tamanho da tree: %d\n",rtree_height(rt));
-      continue;
-    }
+		else if(strcmp(corrente,"size") == 0){
+			int size = rtree_size(rt);
+			if(size == -1)
+				printf("Erro no calculo do tamanho da arvore.\n");
+			else
+				printf("Numero de entries na tree: %d\n",size);
+			continue;
+		}
 
 
-    else if(strcmp(corrente,"del") == 0){
-      corrente = strtok(NULL, " ");
-      if(corrente == NULL){
+		else if(strcmp(corrente,"height") == 0){
+			int height = rtree_height(rt);
+			if(height == -1)
+				printf("Erro no calculo da altura da arvore.\n");
+			else
+				printf("Tamanho da tree: %d\n",height);
+			continue;
+		}
+
+
+		else if(strcmp(corrente,"del") == 0){
+			corrente = strtok(NULL, " ");
+			if(corrente == NULL){
 				printf("Comando del mal escrito, por favor faca o input desta maneira: del <key>\n");
 				continue;
 			}
-      rtree_del(rt,corrente);
-      printf("A chave foi retirada com sucesso. Last_assigned igual a %s\n", last_assigned);
-      continue;
-    }
+			int last_assigned =rtree_del(rt,corrente);
+			if(last_assigned == -1)
+				printf("Erro na eliminacao da entry.\n");
+			else
+				printf("A chave foi %s eliminada.\n Last_assigned igual a %d\n",corrente, last_assigned);
+			continue;
+		}
 
 
-    else if(strcmp(corrente,"get") == 0){
-      corrente = strtok(NULL," ");
-      if(corrente == NULL){
+		else if(strcmp(corrente,"get") == 0){
+			corrente = strtok(NULL," ");
+			if(corrente == NULL){
 				printf("Comando get mal escrito, por favor faca o input desta maneira: get <key>\n");
 				continue;
 			}
-      struct data_t *data = rtree_get(rt,corrente);
+			struct data_t *data = rtree_get(rt,corrente);
 			if(data == NULL)
 				printf("Nao existe essa key.\n");
 			else{
-      	printf("A data na key %s eh %s\n",corrente, data->data);
-					data_destroy(data);
+				printf("A data na key %s eh %s\n",corrente, data->data);
+				data_destroy(data);
 			}
-      continue;
-    }
+			continue;
+		}
 
 
 
-    else if(strcmp(corrente,"put") == 0){
-      corrente = strtok(NULL, " ");
+		else if(strcmp(corrente,"put") == 0){
+			corrente = strtok(NULL, " ");
 			if(corrente == NULL){
 				printf("Comando put mal escrito, por favor faca o input desta maneira: put <key> <data>\n");
 				continue;
 			}
-      char *key = corrente;
-      corrente = strtok(NULL, "\0");
+			char *key = corrente;
+			corrente = strtok(NULL, "\0");
 			if(corrente == NULL){
 				printf("Comando put mal escrito, por favor faca o input desta maneira: put <key> <data>\n");
 				continue;
 			}
-      struct data_t *data = data_create2(strlen(corrente),corrente);
-      struct entry_t *entry = entry_create(key,data);
-      rtree_put(rt,entry);
+			struct data_t *data = data_create2(strlen(corrente),corrente);
+			struct entry_t *entry = entry_create(key,data);
+			int last_assigned = rtree_put(rt,entry);
+			//if (last_assigned == -1)
+			//	printf("Erro na insersao da entry.\n");
+			//else
+			printf("A chave foi posta com sucesso. Last_assigned igual a %d\n", last_assigned);
 			free(data);
-      printf("A chave foi posta com sucesso. Last_assigned igual a %s\n", last_assigned);
-      continue;
-    }
+			continue;
+		}
 
 
 
-    else if(strcmp(corrente,"getkeys") == 0){
-      int i=0;
-      char **keys = rtree_get_keys(rt);
-      printf("Existem estas keys na tree: %s\n", keys);
-			//rtree_free_keys(keys);
-      free(keys);
-      continue;
-    }
+		else if(strcmp(corrente,"getkeys") == 0){
+			int i=0;
+			char **keys = rtree_get_keys(rt);
+			if (keys == NULL)
+				printf("Erro em encontrar todas as keys.\n");
+			else{
+				printf("Existem estas keys na tree: %s\n", keys);
+				//rtree_free_keys(keys);
+				free(keys);
+			}
+			continue;
+		}
 		else if(strcmp(corrente,"verify")==0){
-			char* op_n= strtok(NULL,"\0");
+			corrente = strtok(NULL," ");
 			if(corrente == NULL){
-				printf("Comando verify mal escrito, por favor faca o input desta maneira: put <key> <data>\n");
+				printf("Comando verify mal escrito, por favor faca o input desta maneira: verify <op_n>\n");
 				continue;
 			}
-			int result = rtree_verify(rt, atoi(op_n));
-      if(result == 0)
+			int result = rtree_verify(rt, atoi(corrente));
+			if (result ==-1)
+				printf("Erro no verify.\n");
+			if(result == 1)
 				printf("Essa operacao ja foi executada.\n");
-      else
+			else
 				printf("Essa operacao esta na fila de espera ou nao existe.\n");
 		}
 
 
-    else{
-      printf("Comando inválido. Exemplo de comandos:\n size\n height \n del <key>\n get <key> \n put <key> <data> \n getkeys\n verify <op_n>\n quit\n");
-      continue;
-    }
-  }
-  //free(corrente);
-  free(terminal);
-  return rtree_disconnect(rt);
+		else{
+			printf("Comando inválido. Exemplo de comandos:\n size\n height \n del <key>\n get <key> \n put <key> <data> \n getkeys\n verify <op_n>\n quit\n");
+			continue;
+		}
+	}
+	//free(corrente);
+	free(terminal);
+	return rtree_disconnect(rt);
 
 }

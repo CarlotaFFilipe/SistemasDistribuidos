@@ -4,8 +4,6 @@
 // Mafalda Paço n53507
 
 
-//TODO: ver as respostas do get e del
-
 #include "sdmessage.pb-c.h"
 #include "tree_skel.h"
 #include "message-private.h"
@@ -22,13 +20,14 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 
 int verify(int op_n);
 struct tree_t *tree;
 struct queue_t *queue;
-int stop_flag = 0;
 
+bool stop_flag = true;
 int last_assigned = 0, op_count = 0;
 pthread_t thread;
 
@@ -40,7 +39,7 @@ int process_put(struct task_t * task);
 
 ///////////////////////////FASE 3
 
-int process_put(struct task_t * task){
+int put_process(struct task_t * task){
 	struct data_t * value = data_create(task->datasize);
 	if (value == NULL){
 		return -1;
@@ -57,7 +56,7 @@ int process_put(struct task_t * task){
 	return res;
 }
 
-int process_delete(struct task_t * task){
+int delete_process(struct task_t * task){
 	char *key= strdup(task->key);
 
 	pthread_mutex_lock(&tree_lock);
@@ -75,9 +74,8 @@ void * process_task(void * params){
 	int res = 0;
 	int size = -1;
 
-	while(stop_flag == 0){
+	while(stop_flag){
 
-		//task = empty_queue(queue, queue_lock, queue_not_empty);
 		pthread_mutex_lock(&queue_lock);
 		size = queue_size(queue);
 		if (size == 0)//ficar a espera caso nao haja nenhuma thread na fila
@@ -89,14 +87,14 @@ void * process_task(void * params){
 			continue;
 		}
 		if (task->op == 0){
-			res = process_delete(task);
+			res = delete_process(task);
 		} else {
-			res = process_put(task);
+			res = put_process(task);
 		}
 		if (res < 0){
-			printf("\nErro na operacao %d\n\n", task->op_n);
+			printf("\nOcorreu um erro na operacao %d\n\n", task->op_n);
 		}
-		printf("\nOperacao %d concluida\n\n", task->op_n);
+		printf("\nOperacao %d foi executada\n\n", task->op_n);
 		destroy_task(task);
 		op_count ++;
 	}
@@ -121,8 +119,7 @@ int tree_skel_init(){
 		res = -1;
 	}else{
 		if (pthread_create(&thread, NULL, process_task, NULL) != 0){
-			perror("Thread não criada.");
-			return -1;
+			res= -1;
 		}
 	}
 	return res;
@@ -131,7 +128,7 @@ int tree_skel_init(){
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */
 void tree_skel_destroy(){
-	stop_flag = 1;
+	stop_flag = false;
 	pthread_cond_signal(&queue_not_empty);
 	if (pthread_join(thread, NULL) != 0){
 		perror("Join.");
@@ -170,7 +167,7 @@ int invoke(struct message_t *msg){
 		struct task_t * task = create_task(last_assigned, 0, strdup(msg->data), NULL, 0);
 		free(msg->data);
 		if(task == NULL){
-			none_response_message(msg);
+			error_response_message(msg);
 		} else{
 			del_response_message(msg, last_assigned);
 			last_assigned ++;
@@ -218,7 +215,7 @@ int invoke(struct message_t *msg){
 		pthread_mutex_unlock(&queue_lock);
 
 		if (task == NULL){
-			none_response_message(msg);
+			error_response_message(msg);
 		}else{
 			put_response_message(msg, last_assigned);
 			last_assigned ++;
@@ -256,17 +253,16 @@ int invoke(struct message_t *msg){
 		height_response_message(msg, tamanho);
 		return 0;
 
-		////////////////////////////////////sera preciso fase lock e unlock???????????????
 	}else if(msg->opcode==70){
 		if(msg->c_type!=50){
 			printf("A mensagem verify foi composta incorretamente\n");
 			return -1;
 		}
-		int ver = verify(msg->res);
-		if(ver == -1){
+		int op_verified = verify(msg->res);
+		if(op_verified == -1){
 			error_response_message(msg);
 		}else{
-			verify_response_message(msg, ver);
+			verify_response_message(msg, op_verified);
 		}
 		return 0;
 
@@ -278,7 +274,10 @@ int invoke(struct message_t *msg){
 
 }
 
-/* Verifica se a operação identificada por op_n foi executada.*/
+/* Verifica se a operação identificada por op_n foi executada.
+ * return 1 se a operacao ja foi executada
+ * return 0 caso ainda esteja na queue, nao exista ou esta correntemente a ser executada
+ */
 int verify(int op_n){
 	return op_n < op_count;
 }

@@ -131,11 +131,12 @@ int put_request_message(struct message_t * msg, struct entry_t * entry){
 	return 0;
 }
 
-int put_response_message(struct message_t * msg, int op_n){
+int put_response_message(struct message_t * msg, int last_assigned){
+	msg->opcode +=1;
 	msg->c_type = 60;
 	msg->data_size = 0;
 	msg->data = NULL;
-	msg->res = op_n;
+	msg->res = last_assigned;
 	return 0;
 }
 
@@ -206,11 +207,12 @@ int del_request_message(struct message_t * msg, char * key){
 }
 
 int del_response_message(struct message_t * msg, int op_n){
+	msg->opcode +=1;
 	msg->c_type= 60;
 	msg->data_size = 0;
 	msg->data = NULL;
 	msg->n_keys = 0;
-  msg->res = op_n;
+	msg->res = op_n;
 	return 0;
 }
 
@@ -299,13 +301,13 @@ void verify_request_message(struct message_t * msg, int op_n){
 	msg->c_type = 50;
 	msg->res = op_n;
 }
-void verify_response_message(struct message_t * msg, int op_n){
+void verify_response_message(struct message_t * msg, int op_verified){
 	msg->opcode += 1;
 	msg->c_type = 50;
-	msg->res = op_n;
+	msg->res = op_verified;
 	msg->data_size = 0;
 	msg->n_keys = 0;
-  msg->data = NULL;
+	msg->data = NULL;
 }
 
 
@@ -316,13 +318,5 @@ void error_response_message(struct message_t * msg){
 	msg->c_type = 60;
 	msg->data_size = 0;
 	msg->n_keys = 0;
-  msg->data = NULL;
-}
-
-void none_response_message(struct message_t * msg){
-	msg->opcode +=1;
-	msg->c_type = 60;
-	msg->data_size = 0;
-	msg->n_keys = 0;
-  msg->data = NULL;
+	msg->data = NULL;
 }

@@ -13,6 +13,7 @@ struct task_t {
   char* key;
   int datasize;
   char* data; //NULL em delete
+//deveria fazer outra estrutura que se encarregaria de andar pela queue??????????
   struct task_t * next;
 };
 

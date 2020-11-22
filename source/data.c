@@ -14,67 +14,67 @@
  * necessária, especificada pelo parâmetro size 
  */
 struct data_t *data_create(int size){
-  if(size < 0)
-    return NULL;
-  struct data_t *d1= (struct data_t*) malloc(size * sizeof(struct data_t));
-  d1->datasize = size;
-  if(size == 0)
+	if(size < 0)
+		return NULL;
+	struct data_t *d1= (struct data_t*) malloc(sizeof(struct data_t));
+	d1->datasize = size;
+	if(size == 0)
 		d1->data=NULL;
-  else
-    d1->data = malloc(size * sizeof(d1->data));
-  return d1;
+		else
+			d1->data = malloc(sizeof(d1->data));
+			return d1;
 }
 
 /* Função idêntica à anterior, mas que inicializa os dados de acordo com
  * o parâmetro data.
  */
 struct data_t *data_create2(int size, void *data){
-  if(data == NULL || size < 0)
-    return NULL;
-  struct data_t *d2 = (struct data_t*) malloc(size * sizeof(struct data_t));
-  d2->datasize = size;
-  if(size = 0)
+	if(data == NULL || size < 0)
+		return NULL;
+	struct data_t *d2 = (struct data_t*) malloc(sizeof(struct data_t));
+	d2->datasize = size;
+	if(size = 0)
 		d2->data=NULL;
-  else
-  	d2->data = data;
-  return d2;
+		else
+			d2->data = data;
+			return d2;
 }
 
 /* Função que elimina um bloco de dados, apontado pelo parâmetro data,
  * libertando toda a memória por ele ocupada.
  */
 void data_destroy(struct data_t *data){
-  if(data != NULL){
-    free(data->data);
-    //data->data = NULL;
-    free(data);
-    //data = NULL;
-  }
+	if(data != NULL){
+		free(data->data);
+		//data->data = NULL;
+		free(data);
+		//data = NULL;
+	}
 }
 
 /* Função que duplica uma estrutura data_t, reservando a memória
  * necessária para a nova estrutura.
  */
 struct data_t *data_dup(struct data_t *data){
-  if(data == NULL || data->datasize <= 0 || data->data == NULL)
-    return NULL;
-  else{
-    struct data_t *dup = (struct data_t*) malloc(sizeof(struct data_t));
-    dup->datasize = data->datasize;
-    dup->data = malloc(data->datasize * sizeof(char));
-    memcpy(dup->data, data->data, data->datasize);
-    return dup;
-  }
+	if(data == NULL || data->datasize <= 0 || data->data == NULL)
+		return NULL;
+	else{
+		struct data_t *dup = (struct data_t*) malloc(sizeof(struct data_t));
+		dup->datasize = data->datasize;
+		dup->data = malloc(data->datasize * sizeof(char));
+		memcpy(dup->data, data->data, data->datasize);
+		return dup;
+	}
 }
 
 /* Função que substitui o conteúdo de um elemento de dados data_t.
-*  Deve assegurar que destroi o conteúdo antigo do mesmo.
-*/
+ *  Deve assegurar que destroi o conteúdo antigo do mesmo.
+ */
 void data_replace(struct data_t *data, int new_size, void *new_data){
-  if(data == NULL || data->datasize <= 0 || data->data == NULL || new_size <= 0 || new_data == NULL)
-    return;
-  free(data->data);
-  data->data = NULL;
-  data->datasize = new_size;
-  data->data = new_data;
+	if(data == NULL || data->datasize <= 0 || data->data == NULL || new_size <= 0 || new_data == NULL)
+		return;
+	free(data->data);
+	data->data = NULL;
+	data->datasize = new_size;
+	data->data = new_data;
 }

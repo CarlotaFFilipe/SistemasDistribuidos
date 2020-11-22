@@ -84,7 +84,10 @@ int rtree_put(struct rtree_t *rtree, struct entry_t *entry){
 	free(msg.data);
 	free(entry);
 	if (rmsg != NULL){
-		if (rmsg->opcode == 41){//existe resposta do servidor
+		if(rmsg->opcode == 99){
+			printf("Nao foi possivel inserir essa entry.\n");
+		}
+		else if (rmsg->opcode == 41){//existe resposta do servidor
 			res = rmsg->res;
 		}
 		message_t__free_unpacked(rmsg, NULL);
@@ -122,6 +125,7 @@ struct data_t *rtree_get(struct rtree_t *rtree, char *key){
 			}
 		}
 		else{//opcode == 99
+			printf("Nao existe essa key para eliminar.\n");
 			res = NULL;
 		}
 		message_t__free_unpacked(rmsg, NULL);
@@ -156,7 +160,6 @@ int rtree_del(struct rtree_t *rtree, char *key){
 			printf("Nao existe essa key para eliminar.\n");
 		}
 		else if (rmsg->opcode == 21){//existe resposta do servidor
-			printf("A chave foi %s eliminada.\n", key);
 			res = rmsg->res;;
 		}
 		message_t__free_unpacked(rmsg, NULL);
@@ -181,7 +184,10 @@ int rtree_size(struct rtree_t *rtree){
 
 	rmsg = network_send_receive(rtree, &msg);
 	if (rmsg != NULL){
-		if (rmsg->opcode == 11){//existe resposta do servidor
+		if(rmsg->opcode == 99){
+			printf("Nao foi possivel calcular o tamanho da tree.\n");
+		}
+		else if (rmsg->opcode == 11){//existe resposta do servidor
 			res = rmsg->res;
 		}
 		message_t__free_unpacked(rmsg, NULL);
@@ -204,7 +210,10 @@ int rtree_height(struct rtree_t *rtree){
 	rmsg = network_send_receive(rtree, &msg);
 
 	if (rmsg != NULL){
-		if (rmsg->opcode == 61){//existe resposta do servidor
+		if(rmsg->opcode == 99){
+			printf("Nao foi possivel calcular a altura da tree.\n");
+		}
+		else if (rmsg->opcode == 61){//existe resposta do servidor
 			res = rmsg->res;
 		}
 		message_t__free_unpacked(rmsg, NULL);
@@ -224,6 +233,9 @@ char **rtree_get_keys(struct rtree_t *rtree){
 	get_keys_request_message(&msg);
 	rmsg = network_send_receive(rtree, &msg);
 	if (rmsg != NULL){
+		if(rmsg->opcode == 99){
+			printf("Nao efoi possivel obter todas as chaves da arvore.\n");
+		}
 		if (rmsg->opcode == 51){//existe resposta do servidor
 			res= malloc(rmsg->data_size);
 			strcpy(res, rmsg->data);
@@ -256,7 +268,10 @@ int rtree_verify(struct rtree_t *rtree, int op_n){
 		return res;
 	}
 	if (rmsg != NULL){
-		if (rmsg->opcode == 71){  //existe resposta do servidor
+		if(rmsg->opcode == 99){
+			printf("Nao foi possivel verificar se a operacao %d ja foi executada.\n", op_n);
+		}
+		else if (rmsg->opcode == 71){  //existe resposta do servidor
 			res = rmsg->res;
 		}
 		message_t__free_unpacked(rmsg, NULL);

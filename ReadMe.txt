@@ -43,3 +43,30 @@ FASE 2:
     -key       (todas as chaves)
     -res     (resultado da operação size e height)
 
+
+
+FASE 3:
+ ++ TO RUN ++
+		correr o servidor num terminal:
+			./binary/tree-server 12345
+							OU
+			valgrind --leak-check=yes ./binary/tree-server 12345
+    
+		correr um cliente noutro terminal:
+			./binary/tree-client 127.0.0.1:12345
+							OU
+			valgrind --leak-check=yes ./binary/tree-client 127.0.0.1:12345
+
+
+ ++ ClEAN ++
+		correr no terminal
+			make clean
+
+ ++ Problemas ++
+		- A mensagem impressa no terminal aquando a eliminacao de uma entry que nao exista
+		eh a mesma que quando existe.
+
+ ++ NETWORK_CLIENT.C ++
+		-	Definimos 10 como o numero de sockets para listening
+
+
