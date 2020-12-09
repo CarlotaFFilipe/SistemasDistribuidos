@@ -69,7 +69,7 @@ tree-client: $(OBJ)client-lib.o $(OBJ)tree_client.o
 	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree-client
 
 tree-server:
-	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)task.o $(OBJ)queue.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -lpthread -o $(BIN)tree-server 
+	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)task.o $(OBJ)queue.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -lpthread -lzookeeper_mt -o $(BIN)tree-server 
 
 
 

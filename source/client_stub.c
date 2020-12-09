@@ -17,6 +17,7 @@
 #include "tree.h"
 #include "serialization.h"
 #include "inet.h"
+//#include <zookeeper/zookeeper.h>
 
 
 /* Remote tree. A definir pelo grupo em client_stub-private.h

@@ -43,7 +43,13 @@ int test_input(int argc, char **argv){
 }
 
 void client_handler (struct rtree_t *rt){
+  //signal(SIGINT, client_handler);
+  //signal(SIGQUIT, client_handler);
 	rtree_disconnect(rt);
+/*
+if(client_disconnect(rtable) < 0){
+    exit(1);
+  }*/
 	exit(0);
 }
 
@@ -60,6 +66,7 @@ int main(int argc, char **argv){
 
 	//conectar com o porto e ip
 	rt = rtree_connect(argv[1]);
+//  rt = client_connect(argv[1]);
 	if(rt == NULL)
 		return -1;
 
@@ -206,6 +213,7 @@ int main(int argc, char **argv){
 	}
 	//free(corrente);
 	free(terminal);
+//return client_disconnect(rt);
 	return rtree_disconnect(rt);
 
 }

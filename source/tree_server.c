@@ -21,15 +21,24 @@
 
 //handler para os sinais SIGINT e SIGQUIT
 void quit_handler (int sig){
+/*
+  signal(SIGINT, quit_handler);
+  signal(SIGQUIT, quit_handler);
+  if (destroying){
+    return;
+  }
+  destroying = 1;
+  stop_flag = 1;*/
 	tree_skel_destroy();
 	network_server_close();
+  exit(0);
 }
 
 
 int testInput(int argc){
-	if (argc != 2){
-		printf("Uso: ./tree_server <port>\n");
-		printf("Exemplo de uso: ./tree_server 12345\n");
+	if (argc != 3){
+		printf("Uso: ./tree_server <port> <zkserver:zkport>\n");
+		printf("Exemplo de uso: ./tree_server 12345 \n");
 		return -1;
 	}
 	return 0;
@@ -49,6 +58,9 @@ int main(int argc, char **argv){
 		return -1;
 	//buscar e guardar o porto.
 	int socket;
+
+
+//guardar o port do zookeeper??
 	if((socket=network_server_init(atoi(argv[1])))==-1)
 		return -1;
 	if(tree_skel_init() == -1)
