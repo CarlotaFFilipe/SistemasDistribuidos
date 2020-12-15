@@ -43,8 +43,8 @@ int test_input(int argc, char **argv){
 }
 
 void client_handler (struct rtree_t *rt){
-  //signal(SIGINT, client_handler);
-  //signal(SIGQUIT, client_handler);
+    signal(SIGINT, client_handler);
+    signal(SIGQUIT, client_handler);
 	int status = rtree_disconnect(rt);
 
 	if(status < 0){
@@ -65,8 +65,8 @@ int main(int argc, char **argv){
 		return -1;
 
 	//conectar com o porto e ip
-	rt = rtree_connect(argv[1]);
-//  rt = client_connect(argv[1]);
+	//rt = rtree_connect(argv[1]);
+    rt = client_connect(argv[1]);
 	if(rt == NULL)
 		return -1;
 
