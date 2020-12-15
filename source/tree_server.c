@@ -37,8 +37,8 @@ void quit_handler (int sig){
 
 int testInput(int argc){
 	if (argc != 3){
-		printf("Uso: ./tree_server <port> <zkserver:zkport>\n");
-		printf("Exemplo de uso: ./tree_server 12345 \n");
+		printf("Uso: ./tree_server <port> <zkIP:zkPorta>\n");
+		printf("Exemplo de uso: ./tree_server 12345 10.0.0.1:2000\n");
 		return -1;
 	}
 	return 0;

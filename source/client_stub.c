@@ -25,14 +25,13 @@ typedef struct String_vector zoo_string;
 
 zhandle_t * czh = NULL;
 FILE * fp;
-const char * cchain_root = "/kvstore";            ////////////////////mudar o nome desta variavel
+const char * z_root = "/kvstore";            ////////////////////mudar o nome desta variavel
 char * primary_server = NULL;
 char * backup_server = NULL;
 struct rtree_t * primary_rtree = NULL;
 struct rtree_t * backup_rtree = NULL;
 
 
-//fazer .h??????????
 int update_servers();
 char * find_server(zoo_string * children, int pos);
 void free_zoostring (zoo_string * children);
@@ -43,7 +42,7 @@ void cconnection_watcher(zhandle_t * zkh, int type, int state, const char * path
 
 
 
-//watch dos servidores //pedophile
+//watch dos servidores
 static void cchild_watcher(zhandle_t * zkh, int type, int state, const char * path, void * ctx) {
 	if (state == ZOO_CONNECTED_STATE){
 		if (type == ZOO_CHILD_EVENT){
@@ -68,7 +67,7 @@ struct rtree_t * client_connect(const char *address_port){
     return NULL;
   }
 
-	fp = fopen ("zoo_log.txt", "w+");
+	fp = fopen ("zoo_log.txt", "w+"); ///////////////Tera este nome
 	if (fp == NULL){
 		perror("Erro na criacao do ficheiro de log.");
 	} else{
@@ -81,7 +80,7 @@ struct rtree_t * client_connect(const char *address_port){
 		return NULL;
 	}
 
-  if (ZNONODE == zoo_exists(czh, cchain_root, 0, NULL)) {
+  if (ZNONODE == zoo_exists(czh, z_root, 0, NULL)) {
     perror("\nServidor inexistente.");
     return NULL;
   }
@@ -97,13 +96,13 @@ struct rtree_t * client_connect(const char *address_port){
 //atualiza a ligacao primaria e o backup
 int update_servers(){
   zoo_string* children_list =	(zoo_string *) malloc(sizeof(zoo_string));
-  if (ZOK != zoo_wget_children(czh, cchain_root, cchild_watcher, NULL, children_list)) {
+  if (ZOK != zoo_wget_children(czh, z_root, cchild_watcher, NULL, children_list)) {
     perror("Erro no watch.");
     return -1;
   }
 //como so existem 2 servidores nesta lista, o primary e o backup, sabemos as suas posicoes
-  char * primary = find_server(children_list, 1);
-  char * backup = find_server(children_list, 2);
+  char * primary = find_server(children_list, 0);
+  char * backup = find_server(children_list, 1);
   free_zoostring(children_list);
 
   if (primary == NULL || backup == NULL){
@@ -111,7 +110,7 @@ int update_servers(){
     return -1;
   }
 
-  printf("\nServidor PRIMARIO mudou de %s para %s.\n", primary_server, primary);
+  printf("\nServidor PRIMARIO vai mudar de %s para %s.\n", primary_server, primary);
 
   int len = 1024;
   char nserver_addrport[1024] = "";
@@ -134,7 +133,7 @@ int update_servers(){
     free(primary);
   }
 
-	printf("\nServidor BACKUP mudou de %s para %s.\n", backup_server, backup);
+	printf("\nServidor BACKUP vai mudar de %s para %s.\n", backup_server, backup);
 
   if (backup_server == NULL || strcmp(backup_server, backup) != 0){
     if (backup_rtree != NULL){
@@ -157,6 +156,16 @@ int update_servers(){
 }
 
 
+char * find_server(zoo_string * children, int pos){
+    char * temp = NULL;
+	char tnode[32] = "";
+	strcat(tnode, z_root);
+	strcat(tnode, "/");
+
+	return strdup(strcat(tnode, children->data[pos]));
+
+}
+
 //////////////////////////////////////////////////////////////////////////////
 /////////////////Nao sei se eh preciso esta funcao
 //liberta memoria alocada por get_children
@@ -173,9 +182,9 @@ void free_zoostring (zoo_string * children){
 }
 
 int client_disconnect(struct rtree_t * dummy){
-	if (czh != NULL)
+  if (czh != NULL)
   	zookeeper_close(czh);
-	if (fp != NULL)
+  if (fp != NULL)
 		fclose(fp);
   free(dummy);
   if (primary_rtree != NULL && rtree_disconnect(primary_rtree) != 0){
