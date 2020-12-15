@@ -21,14 +21,7 @@
 
 //handler para os sinais SIGINT e SIGQUIT
 void quit_handler (int sig){
-/*
-  signal(SIGINT, quit_handler);
-  signal(SIGQUIT, quit_handler);
-  if (destroying){
-    return;
-  }
-  destroying = 1;
-  stop_flag = 1;*/
+
 	tree_skel_destroy();
 	network_server_close();
   exit(0);
@@ -65,7 +58,6 @@ int main(int argc, char **argv){
 		return -1;
 	if(tree_skel_init() == -1)
 		return -1;
-	//network_main_loop
 	int result;
 	if((result= network_main_loop(socket))==-1)
 		return -1;
