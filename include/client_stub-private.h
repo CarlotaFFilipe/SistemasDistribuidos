@@ -14,13 +14,4 @@ struct rtree_t{
 	char *port;
     int socket;
 };
-
-
-
-//Liga o cliente ao servidor do zookeeper e a head e tail da chain
-struct rtree_t * client_connect(const char *address_port);
-
-//Termina todas as ligacoes do cliente
-int client_disconnect(struct rtree_t * rtree);
-
 #endif

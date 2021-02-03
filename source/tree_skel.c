@@ -13,9 +13,6 @@
 #include "serialization.h"
 #include "task.h"
 #include "queue.h"
-#include "client_stub.h"
-#include "client_stub-private.h"
-#include "net_utils.h"
 
 
 #include <stdio.h>
@@ -24,7 +21,6 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <zookeeper/zookeeper.h>
 
 
 int verify(int op_n);
@@ -41,172 +37,7 @@ pthread_cond_t queue_not_empty =  PTHREAD_COND_INITIALIZER;
 int process_delete(struct task_t * task);
 int process_put(struct task_t * task);
 
-
-///////////////////
-
-
-//ip:porto do servidor do zookeeper
-const char * host_port;
-//porto tcp
-int tcp_port;
-
-//Livro:Apache Zookeeper Essentials
-typedef struct String_vector zoo_string;
-
-zhandle_t * zh = NULL;
-FILE * server_fp;
-const char * z_root_server = "/kvstore";
-char * path_primary = NULL;
-char * backup_s = NULL;
-struct rtree_t * rtree = NULL;
-
-
-
-//funcoes locais
-void * process_task(void * params);
-int zk_connect();
-int connect_other_server();
-
-
-
-
-
-//watch da ligação deste servidor
-void connection_watcher(zhandle_t * zkh, int type, int state, const char * path, void * ctx){}
-//watch dos servidores
-static void child_watcher(zhandle_t * zkh, int type, int state, const char * path, void * ctx) {
-	if (state == ZOO_CONNECTED_STATE){
-		if (type == ZOO_CHILD_EVENT){
-			connect_other_server();
-		}
-	}
-}
-
-
-
-//faz a ligacao ao servidor do zookeeper e cria o no efemero deste servidor
-int zk_connect(){
-
-	server_fp = fopen ("zoo_server_log.txt", "w+");
-	if (server_fp == NULL){
-		perror("Erro na criacao do ficheiro de log");
-	} else {
-		zoo_set_log_stream(server_fp);
-	}
-
-	zh = zookeeper_init(host_port, connection_watcher, 2000, 0, 0, 0);
-	if (zh == NULL) {
-		perror("Erro na ligacao ao servidor do ZooKeeper.");
-		return -1;
-	}
-
-	if (ZNONODE == zoo_exists(zh, z_root_server, 0, NULL)) {
-		if (ZOK != zoo_create(zh, z_root_server, NULL, -1, & ZOO_OPEN_ACL_UNSAFE, 0, NULL, 0)) {
-			perror("Erro na criacao do no /kvstore.");
-			return -1;
-		}
-	}
-
-	char node_path[64] = "/kvstore/primary";
-	int new_path_len = 1024;
-	path_primary = malloc (new_path_len);
-	char * local_ip = get_ip();
-	if (local_ip == NULL){
-		return -1;
-	}
-	char server_addr_port[32] = "";
-	strcat(server_addr_port, local_ip);
-	free(local_ip);
-	strcat(server_addr_port, ":");
-	//strcat(server_addr_port, itoa(tcp_port));
-	char str[16];
-	sprintf(str, "%d", tcp_port);
-	strcat(server_addr_port, str);
-
-
-	if (ZOK != zoo_create(zh, node_path, server_addr_port, strlen(server_addr_port), & ZOO_OPEN_ACL_UNSAFE, ZOO_EPHEMERAL | ZOO_SEQUENCE, path_primary, new_path_len)) {
-		perror("Erro na criacao do no efemero");
-		return -1;
-	}
-	printf("\nNo efemero %s criado.\n", path_primary);
-	return 0;
-}
-
-
-
-//faz watch aos servidores
-int connect_other_server(){
-
-
-	int len = 1024;
-	char nserver_addrport[1024] = "";
-	bool has_backup = false;
-	char * backup = NULL;
-
-	//Supostamente tem tamanho 2 (primary e backup)
-	zoo_string* children_list =	(zoo_string *) malloc(sizeof(zoo_string));
-	if (ZOK != zoo_wget_children(zh, z_root_server, child_watcher, NULL, children_list)) {
-		perror("Erro no watch.");
-		return -1;
-	}
-	if(children_list->count == 2)
-		has_backup = true;
-
-	if(has_backup)
-		backup = find_server(children_list, 1);
-	if(backup == NULL){
-		perror("Erro a encontrar servidor");
-		return -1;
-	}
-	free_zoostring(children_list);
-
-	//caso seja o mesmo servidor
-	if (backup_s != NULL && strcmp(backup, backup_s) == 0){
-		free(backup);
-		return 0;
-	}
-	//caso so haja 1 no, so existe o primary...
-	if (strcmp(backup, path_primary) == 0){
-		free(backup);
-		if (backup_s != NULL){
-			free(backup_s);
-			backup_s = NULL;
-			if (rtree_disconnect(rtree) != 0){
-				perror("Erro no fecho da ligacao com o servidor");
-				return -1;
-			}
-			rtree = NULL;
-		}
-	} else {
-		if (backup_s != NULL){
-			free(backup_s);
-			if (rtree_disconnect(rtree) != 0){
-				perror("Erro no fecho da ligacao com o servidor");
-				return -1;
-			}
-		}
-
-//TODO: Temos que fazer o backup efermo
-		backup_s = backup;
-		zoo_get(zh, backup_s, 0, &nserver_addrport, &len, NULL);
-		rtree = rtree_connect(nserver_addrport);
-		if (rtree == NULL){
-			return -1;
-		}
-	}
-	return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
+///////////////////////////FASE 3
 
 int put_process(struct task_t * task){
 	struct data_t * value = data_create(task->datasize);
@@ -286,37 +117,18 @@ int tree_skel_init(){
 	queue = create_queue();
 	if (tree == NULL || queue == NULL){
 		res = -1;
-	}else if (pthread_create(&thread, NULL, process_task, NULL) != 0){
-		queue_destroy(queue);
-		tree_destroy(tree);
-		perror("Thread não criada.");
-		res = -1;
-	}
-	if (zk_connect() < 0){
-		tree_skel_destroy();
-		perror("Erro na ligacao ao zookeeper");
-		return -1;
-	}
-	if (connect_other_server() < 0){
-		tree_skel_destroy();
-		perror("Erro na ligacao ao proximo servidor");
-		return -1;
+	}else{
+		if (pthread_create(&thread, NULL, process_task, NULL) != 0){
+			res= -1;
+		}
 	}
 	return res;
 }
 
 /* Liberta toda a memória e recursos alocados pela função tree_skel_init.
  */
-void tree_skel_destroy(){	
+void tree_skel_destroy(){
 	stop_flag = false;
-	if (zh != NULL)
-		zookeeper_close(zh);
-	fclose(server_fp);
-	if (path_primary != NULL)
-		free(path_primary);
-	if (backup_s != NULL)//?????
-		free(backup_s);
-
 	pthread_cond_signal(&queue_not_empty);
 	if (pthread_join(thread, NULL) != 0){
 		perror("Join.");

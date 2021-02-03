@@ -69,4 +69,7 @@ FASE 3:
  ++ NETWORK_CLIENT.C ++
 		-	Definimos 10 como o numero de sockets para listening
 
+ ++ FUGAS DE MEMORIA ++
+		- quando fechamos o servidor
+		- quando adicionamos uma entry em que o data tem espacos
 

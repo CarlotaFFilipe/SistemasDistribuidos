@@ -12,7 +12,7 @@ LIB = lib/
 FLAG = gcc -g -w -Wall -I include/ -I lib/ -c
 LINKFLAGS= ld -r
 
-all: proto data.o entry.o tree.o serialization.o message.o task.o queue.o network_client.o client_stub.o tree_cliente.o network_server.o tree_skel.o tree_server.o net_utils.o sdmessage.pb-c.o client-lib.o tree-client tree-server
+all: proto data.o entry.o tree.o serialization.o message.o task.o queue.o network_client.o client_stub.o tree_cliente.o network_server.o tree_skel.o tree_server.o sdmessage.pb-c.o client-lib.o tree-client tree-server
 
 proto: 
 	protoc --c_out=./lib/ sdmessage.proto
@@ -58,9 +58,6 @@ tree_server.o: $(INCLUDE)data.h $(INCLUDE)entry.h $(INCLUDE)tree.h $(INCLUDE)net
 network_server.o: $(INCLUDE)tree_skel.h $(INCLUDE)network_server.h $(INCLUDE)message-private.h $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(SRC)network_server.c -o $(OBJ)network_server.o
 
-net_utils.o:
-	$(FLAG) $(SRC)net_utils.c -o $(OBJ)net_utils.o
-
 sdmessage.pb-c.o: $(LIB)sdmessage.pb-c.h
 	$(FLAG) $(LIB)sdmessage.pb-c.c -o $(OBJ)sdmessage.pb-c.o
 
@@ -69,10 +66,10 @@ client-lib.o:
 	$(LINKFLAGS) $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)client_stub.o $(OBJ)network_client.o $(OBJ)sdmessage.pb-c.o -o $(OBJ)client-lib.o 
 
 tree-client: $(OBJ)client-lib.o $(OBJ)tree_client.o
-	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -lzookeeper_mt -o $(BIN)tree-client
+	$(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)client-lib.o $(OBJ)tree_client.o /usr/local/lib/libprotobuf-c.a -o $(BIN)tree-client
 
 tree-server:
-	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)task.o $(OBJ)queue.o $(OBJ)network_client.o $(OBJ)client_stub.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)net_utils.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -lpthread -lzookeeper_mt -o $(BIN)tree-server 
+	 $(CC) -L/usr/local/lib -lprotobuf-c $(OBJ)data.o $(OBJ)entry.o $(OBJ)tree.o $(OBJ)serialization.o $(OBJ)message.o $(OBJ)task.o $(OBJ)queue.o $(OBJ)tree_skel.o $(OBJ)network_server.o $(OBJ)tree_server.o $(OBJ)sdmessage.pb-c.o /usr/local/lib/libprotobuf-c.a -lpthread -o $(BIN)tree-server 
 
 
 
